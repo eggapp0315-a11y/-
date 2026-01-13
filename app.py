@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, request, flash, url_for, session
+from flask import Flask, render_template, redirect, request, flash, url_for, session, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -225,6 +225,9 @@ def admin_new_lesson():
 
     return render_template("admin_new_lesson.html", grades=grades)
 
+@app.route('/google77b51b745d5d14fa.html')
+def google_verification():
+    return send_from_directory('static', 'google77b51b745d5d14fa.html')
 
 # ========================
 # 初始化資料
