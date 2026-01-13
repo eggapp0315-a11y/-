@@ -4,7 +4,7 @@ from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
 import json
-
+import os
 # ========================
 # Flask 與資料庫設定
 # ========================
@@ -24,9 +24,10 @@ migrate = Migrate(app, db)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_USERNAME'] = 'eggapp0315@gmail.com'
-app.config['MAIL_PASSWORD'] = 'krzg kfui mcgs gray'
+app.config['MAIL_USERNAME'] = os.environ.get("MAIL_USERNAME", "eggapp0315@gmail.com")
+app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASSWORD", "krzg kfui mcgs gray")
 mail = Mail(app)
+
 
 # ========================
 # 資料庫模型
@@ -74,31 +75,22 @@ class Lesson(db.Model):
 def root():
     return redirect(url_for("home"))
 
-
 @app.route("/home")
 def home():
     grades = Grade.query.all()
     return render_template("index.html", grades=grades)
 
-
 @app.route("/<grade_code>/<topic>")
 def lesson(grade_code, topic):
-    lesson = (
-        Lesson.query
-        .join(Grade)
-        .filter(Grade.code == grade_code, Lesson.topic == topic)
-        .first()
-    )
+    lesson = Lesson.query.join(Grade).filter(Grade.code == grade_code, Lesson.topic == topic).first()
     if not lesson:
         return "找不到課程", 404
-
     return render_template(
         "lesson.html",
         grade_name=lesson.grade.name,
         title=lesson.title,
         content=lesson.content
     )
-
 
 # ========================
 # 聯絡我們
@@ -127,7 +119,6 @@ def contact():
 
     return render_template("contact.html")
 
-
 # ========================
 # 註冊
 # ========================
@@ -155,11 +146,10 @@ def register():
         db.session.add(student)
         db.session.commit()
 
-        flash("註冊成功，請登入")
-        return redirect(url_for("home"))
+        flash("✅ 註冊成功，請登入")
+        return redirect(url_for("home"))  # 註冊後回首頁登入 Modal 顯示
 
     return render_template("register.html")
-
 
 # ========================
 # 登入（Modal 用）
@@ -183,7 +173,6 @@ def login():
     flash("帳號或密碼錯誤！", "login_error")
     return redirect(url_for("home"))
 
-
 # ========================
 # 學生專屬頁面
 # ========================
@@ -203,7 +192,6 @@ def student_dashboard():
         courses=courses,
         scores=scores
     )
-
 
 # ========================
 # 管理員新增課程
@@ -225,8 +213,12 @@ def admin_new_lesson():
 
     return render_template("admin_new_lesson.html", grades=grades)
 
+# ========================
+# Google HTML 驗證
+# ========================
 @app.route('/google77b51b745d5d14fa.html')
 def google_verification():
+    # 把 Google 驗證 HTML 放在 static 目錄下
     return send_from_directory('static', 'google77b51b745d5d14fa.html')
 
 # ========================
