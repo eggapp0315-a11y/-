@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>聯繫我們</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header>
+    <h1>聯繫我們</h1>
+    <nav>
+        <ul>
+            <li><a href="/about">關於我們</a></li>
+            <li><a href="/contact">聯繫我們</a></li>
+            <li><a href="/heroes">英雄榜</a></li>
+            <li><a href="/teaching">教學理念</a></li>
+        </ul>
+    </nav>
+</header>
+
+<main class="container">
+
+    <!-- 顯示 flash 訊息 -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+          <div class="flash {{ category }}">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <h2>聯繫我們</h2>
+    <p>你可以透過電子郵件或表單與我們聯繫。</p>
+
+    <form action="/contact" method="post">
+        <label>姓名：
+            <input type="text" name="name" required>
+        </label>
+
+        <label>電子郵件：
+            <input type="email" name="email" required>
+        </label>
+
+        <label>訊息：
+            <textarea name="message" rows="5" required></textarea>
+        </label>
+
+        <button type="submit">送出</button>
+        <button class="back-home-btn" onclick="window.location.href='/home'">
+        返回主頁
+        </button>
+
+        <h5>IG聯絡:vincent9988776655</h5>
+        <h3>wechat聯絡</h3>
+        <img src="/static/image/wechat.jpg" alt="wechat聯絡">
+        <h3>Line聯絡</h3>
+        <img src="/static/image/Line.jpg" alt="Line聯絡">
+    </form>
+</main>
+</body>
+</html>

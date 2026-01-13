@@ -1,0 +1,17 @@
+<h2>{{ student.user.username }} 的學生專屬頁面</h2>
+
+<h3>課表</h3>
+<ul>
+  {% for course, time in courses.items() %}
+    <li>{{ course }} - {{ time }}</li>
+  {% endfor %}
+</ul>
+
+<h3>成績</h3>
+<ul>
+  {% for course, score in scores.items() %}
+    <li>{{ course }} : {{ score }}</li>
+  {% endfor %}
+</ul>
+
+<a href="/home">返回首頁</a>

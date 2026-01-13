@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>新增課程</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>➕ 新增課程</h1>
+
+    <form method="post">
+        <label>年級</label>
+        <select name="grade_id" required>
+            {% for grade in grades %}
+                <option value="{{ grade.id }}">{{ grade.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label>章節代碼（URL 用）</label>
+        <input type="text" name="topic" placeholder="fraction" required>
+
+        <label>課程標題</label>
+        <input type="text" name="title" placeholder="分數" required>
+
+        <label>課程內容</label>
+        <textarea name="content" rows="6" required></textarea>
+
+        <button type="submit">儲存課程</button>
+    </form>
+</div>
+
+</body>
+</html>
