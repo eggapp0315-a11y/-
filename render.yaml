@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: math-site         # 服務名字
+    env: python             # 使用 Python 環境
+    plan: free              # 免費方案
+    buildCommand: pip install -r requirements.txt   # 安裝依賴
+    startCommand: gunicorn app:app                 # 啟動 Flask

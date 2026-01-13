@@ -20,6 +20,9 @@
       </list>
     </option>
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
   <component name="HttpClientOnboardingState">{
   &quot;isOnboardingCommentShown&quot;: true
 }</component>
@@ -39,6 +42,7 @@
     "Python.app.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "git-widget-placeholder": "master",
     "last_opened_file_path": "C:/Users/eggap/Desktop/math_site"
   }
 }]]></component>
