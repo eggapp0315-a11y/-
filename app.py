@@ -93,6 +93,14 @@ def lesson(grade_code, topic):
     )
 
 # ========================
+# Google HTML 驗證
+# ========================
+@app.route('/google77b51b745d5d14fa.html')
+def google_verification():
+    # 把 Google 驗證 HTML 放在 static 目錄下
+    return send_from_directory('static', 'google77b51b745d5d14fa.html')
+
+# ========================
 # 聯絡我們
 # ========================
 @app.route("/contact", methods=["GET", "POST"])
@@ -213,13 +221,7 @@ def admin_new_lesson():
 
     return render_template("admin_new_lesson.html", grades=grades)
 
-# ========================
-# Google HTML 驗證
-# ========================
-@app.route('/google77b51b745d5d14fa.html')
-def google_verification():
-    # 把 Google 驗證 HTML 放在 static 目錄下
-    return send_from_directory('static', 'google77b51b745d5d14fa.html')
+
 
 # ========================
 # 初始化資料
