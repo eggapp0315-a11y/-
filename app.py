@@ -5,6 +5,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
 import json
 import os
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+import re
+
 # ========================
 # Flask 與資料庫設定
 # ========================
@@ -16,6 +20,20 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"]
+)
+
+def is_strong_password(pw):
+    return (
+        len(pw) >= 8 and
+        re.search(r"[A-Z]", pw) and
+        re.search(r"[a-z]", pw) and
+        re.search(r"[0-9]", pw)
+    )
 
 # ========================
 # Gmail 郵件設定
@@ -98,7 +116,7 @@ def lesson(grade_code, topic):
 @app.route('/google77b51b745d5d14fa.html')
 def google_verification():
     # 把 Google 驗證 HTML 放在 static 目錄下
-    return send_from_directory('static', 'google77b51b745d5d14fa.html')
+    return send_from_directory('.', 'google77b51b745d5d14fa.html')
 
 # ========================
 # 聯絡我們
@@ -163,6 +181,7 @@ def register():
 # 登入（Modal 用）
 # ========================
 @app.route("/login", methods=["POST"])
+@limiter.limit("5 per minute")
 def login():
     username = request.form.get("username")
     password = request.form.get("password")
@@ -241,4 +260,4 @@ if __name__ == "__main__":
             ])
             db.session.commit()
 
-    app.run(debug=True)
+    app.run(debug=False)
