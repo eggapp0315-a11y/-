@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>新增消息｜後台管理</title>
+
+    <!-- 共用樣式 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<!-- ======================
+     Header｜後台標題
+====================== -->
+<header>
+    <h1>後台管理｜新增最新消息</h1>
+    <nav>
+        <a href="{{ url_for('news') }}">← 回最新消息</a>
+    </nav>
+</header>
+
+<!-- ======================
+     主內容區
+====================== -->
+<main class="container">
+
+    <!--
+        ⚠️ 檔案上傳一定要：
+        enctype="multipart/form-data"
+    -->
+    <form
+        action="{{ url_for('admin_new_news') }}"
+        method="post"
+        enctype="multipart/form-data"
+    >
+
+        <!-- 消息標題 -->
+        <label>
+            消息標題：
+            <input
+                type="text"
+                name="title"
+                placeholder="請輸入消息標題"
+                required
+            >
+        </label>
+
+        <!-- 消息內容 -->
+        <label>
+            消息內容：
+            <textarea
+                name="content"
+                rows="6"
+                placeholder="請輸入消息內容"
+                required
+            ></textarea>
+        </label>
+
+        <!-- 附加檔案（選填） -->
+        <label>
+            附加檔案（圖片 / PDF / Word / ZIP）：
+            <input
+                type="file"
+                name="image"
+                accept=".jpg,.png,.pdf,.zip,.docx"
+            >
+        </label>
+
+        <!-- 送出 -->
+        <button type="submit">新增消息</button>
+
+    </form>
+
+</main>
+
+</body>
+</html>

@@ -1,13 +1,16 @@
-/* =========================
-   全站基礎設定（教學風格）
-========================= */
+/* =========================================================
+   全站基礎設定（教學網站整體風格）
+   - 重置瀏覽器預設樣式
+   - 設定字型、背景色、文字顏色
+========================================================= */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
     width: 100%;
     overflow-x: hidden;
     font-family: "Segoe UI", "Noto Sans TC", Arial, sans-serif;
@@ -15,9 +18,12 @@ html, body {
     color: #222;
 }
 
-/* =========================
-   Header（教學網站標題）
-========================= */
+
+/* =========================================================
+   Header（網站標題 / 導覽列區塊）
+   - 顯示網站名稱
+   - 統一網站主色調
+========================================================= */
 header {
     background-color: #2b7cff;
     color: white;
@@ -29,9 +35,12 @@ header h1 {
     font-weight: 600;
 }
 
-/* =========================
-   Hero 教學橫幅
-========================= */
+
+/* =========================================================
+   Hero 區塊（首頁教學橫幅）
+   - 大型圖片背景
+   - 文字疊加於圖片上
+========================================================= */
 .hero {
     position: relative;
     width: 100%;
@@ -58,9 +67,12 @@ header h1 {
     border-radius: 8px;
 }
 
-/* =========================
-   主內容容器
-========================= */
+
+/* =========================================================
+   主內容容器（課程列表 / 課程內容）
+   - 控制頁面最大寬度
+   - 白底卡片式設計
+========================================================= */
 .container {
     max-width: 900px;
     margin: 40px auto;
@@ -69,9 +81,11 @@ header h1 {
     border-radius: 10px;
 }
 
-/* =========================
-   年級標題（教材章節感）
-========================= */
+
+/* =========================================================
+   年級標題（例如：七年級數學）
+   - 左側藍色線條，營造教材章節感
+========================================================= */
 .grade-title {
     margin-top: 32px;
     font-size: 22px;
@@ -80,9 +94,11 @@ header h1 {
     padding-left: 12px;
 }
 
-/* =========================
-   課程清單（教學連結）
-========================= */
+
+/* =========================================================
+   課程清單（教材章節連結）
+   - 點擊進入各章節內容
+========================================================= */
 .lesson-list {
     list-style: none;
     margin-top: 12px;
@@ -103,9 +119,12 @@ header h1 {
     text-decoration: underline;
 }
 
-/* =========================
-   課程頁內容
-========================= */
+
+/* =========================================================
+   課程頁內容（單一課程頁）
+   - 課程標題
+   - 課程說明文字
+========================================================= */
 .lesson-title {
     font-size: 28px;
     font-weight: 600;
@@ -118,9 +137,11 @@ header h1 {
     margin-top: 20px;
 }
 
-/* =========================
+
+/* =========================================================
    教學重點提示框
-========================= */
+   - 用於重點提醒、觀念說明
+========================================================= */
 .note {
     background: #eef5ff;
     border-left: 5px solid #2b7cff;
@@ -129,9 +150,11 @@ header h1 {
     border-radius: 6px;
 }
 
-/* =========================
-   後台表單（教學平台風）
-========================= */
+
+/* =========================================================
+   表單樣式（註冊 / 登入 / 後台管理）
+   - 統一輸入框、按鈕風格
+========================================================= */
 form label {
     display: block;
     margin-top: 18px;
@@ -167,6 +190,11 @@ form button {
 form button:hover {
     background: #1f66d1;
 }
+
+
+/* =========================================================
+   登入錯誤提示（Modal / 表單錯誤）
+========================================================= */
 .login-error {
     background: #ffe6e6;
     color: #cc0000;
@@ -176,3 +204,122 @@ form button:hover {
     margin-bottom: 10px;
     font-weight: bold;
 }
+/* =========================
+   教學理念頁－深色主題
+========================= */
+.dark-teaching {
+    background-color: #0f172a; /* 深藍黑 */
+    color: #e5e7eb;
+}
+
+/* Header */
+.dark-teaching header {
+    background-color: #020617;
+    border-bottom: 1px solid #1e293b;
+}
+
+.dark-teaching header h1 {
+    color: #f8fafc;
+}
+
+/* 主內容容器 */
+.dark-teaching .container {
+    background-color: #020617;
+    box-shadow: 0 0 0 1px #1e293b;
+}
+
+/* 標題 */
+.dark-teaching .grade-title {
+    color: #93c5fd;
+    border-left-color: #3b82f6;
+}
+
+/* 文字 */
+.dark-teaching .lesson-content {
+    color: #e5e7eb;
+}
+
+/* 清單 */
+.dark-teaching .lesson-list li {
+    color: #c7d2fe;
+}
+
+/* 提示框 */
+.dark-teaching .note {
+    background-color: #020617;
+    border-left-color: #38bdf8;
+    color: #e0f2fe;
+}
+
+/* 連結 */
+.dark-teaching a {
+    color: #60a5fa;
+}
+
+.dark-teaching a:hover {
+    color: #93c5fd;
+    text-decoration: underline;
+}
+
+
+/* =========================
+   回首頁按鈕
+========================= */
+.back-home {
+    margin: 16px 24px;
+}
+
+.back-home a {
+    display: inline-block;
+    background-color: #2b7cff;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.back-home a:hover {
+    background-color: #1f66d1;
+}
+
+.news-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.news-item {
+    border-bottom: 1px solid #ccc;
+    padding: 16px 0;
+}
+
+.news-item h3 {
+    font-size: 20px;
+    color: #2b7cff;
+}
+
+.news-date {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+}
+.news-image {
+    max-width: 100%;
+    margin-top: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.delete-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.delete-btn:hover {
+    background-color: #b02a37;
+}
+

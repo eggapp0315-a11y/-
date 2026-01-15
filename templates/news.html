@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>最新消息｜數學教學網站</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<!-- ======================
+     Header
+====================== -->
+<header>
+    <h1>📘 數學教學網站</h1>
+    <nav>
+        <a href="{{ url_for('home') }}">回首頁</a>
+
+        {% if session.get("role") == "admin" %}
+            | <a href="{{ url_for('admin_new_news') }}">新增消息</a>
+        {% endif %}
+    </nav>
+</header>
+
+<!-- ======================
+     主內容
+====================== -->
+<main class="container">
+    <h2>最新消息</h2>
+
+    {% if news_list %}
+        <ul class="news-list">
+
+            {% for news in news_list %}
+                <li class="news-item">
+
+                    <h3>{{ news.title }}</h3>
+
+                    <p class="news-date">
+                        {{ news.date.strftime("%Y/%m/%d %H:%M") }}
+                    </p>
+
+                    <p class="news-content">
+                        {{ news.content }}
+                    </p>
+
+                    <!-- 顯示圖片 -->
+                    {% if news.filename %}
+                        <img
+                            src="{{ url_for('static', filename='uploads/' + news.filename) }}"
+                            alt="消息圖片"
+                            class="news-image"
+                        >
+                    {% endif %}
+
+                    <!-- ✅ 只有管理員才看到刪除按鈕 -->
+                    {% if session.get("role") == "admin" %}
+                        <form
+                            action="{{ url_for('admin_delete_news', news_id=news.id) }}"
+                            method="post"
+                            onsubmit="return confirm('確定要刪除這則消息嗎？');"
+                            style="margin-top:10px;"
+                        >
+                            <button class="delete-btn">🗑️ 刪除</button>
+                        </form>
+                    {% endif %}
+
+                </li>
+            {% endfor %}
+
+        </ul>
+    {% else %}
+        <p>目前沒有最新消息。</p>
+    {% endif %}
+</main>
+
+</body>
+</html>

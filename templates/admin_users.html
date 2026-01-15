@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>使用者管理｜後台管理</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+    <h1>後台管理｜使用者管理</h1>
+    <nav>
+        <a href="{{ url_for('home') }}">← 回首頁</a>
+    </nav>
+</header>
+
+<main class="container">
+    <h2>所有使用者</h2>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul style="color: green;">
+          {% for msg in messages %}
+            <li>{{ msg }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <table border="1" cellpadding="10" cellspacing="0" style="width:100%; text-align:left;">
+        <tr>
+            <th>ID</th>
+            <th>帳號</th>
+            <th>角色</th>
+            <th>操作</th>
+        </tr>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.role }}</td>
+            <td>
+                <form method="post" style="display:inline;">
+                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                    {% if user.role == "student" %}
+                        <button type="submit" name="action" value="promote">升級為管理員</button>
+                    {% elif user.role == "admin" and user.username != session.get("username") %}
+                        <button type="submit" name="action" value="demote">降級為學生</button>
+                    {% endif %}
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</main>
+</body>
+</html>

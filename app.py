@@ -1,39 +1,34 @@
-from flask import Flask, render_template, redirect, request, flash, url_for, session, send_from_directory
+from flask import (
+    Flask, render_template, redirect, request,
+    flash, url_for, session, send_from_directory
+)
 from flask_sqlalchemy import SQLAlchemy
-from flask_mail import Mail, Message
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_migrate import Migrate
-import json
-import os
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-import re
+from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
+from datetime import datetime
+import os
+from datetime import timedelta
+from flask_mail import Mail, Message
+
 
 # ========================
-# Flask 與資料庫設定
+# Flask 基本設定
 # ========================
 app = Flask(__name__)
 app.secret_key = "你的密鑰"
-
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///math.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
+app.permanent_session_lifetime = timedelta(days=7)
 db = SQLAlchemy(app)
-migrate = Migrate(app, db)
 
+# 流量限制設定
 limiter = Limiter(
     get_remote_address,
     app=app,
     default_limits=["200 per day", "50 per hour"]
 )
-
-def is_strong_password(pw):
-    return (
-        len(pw) >= 8 and
-        re.search(r"[A-Z]", pw) and
-        re.search(r"[a-z]", pw) and
-        re.search(r"[0-9]", pw)
-    )
 
 # ========================
 # Gmail 郵件設定
@@ -42,10 +37,22 @@ def is_strong_password(pw):
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_USERNAME'] = os.environ.get("MAIL_USERNAME", "eggapp0315@gmail.com")
-app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASSWORD", "krzg kfui mcgs gray")
+app.config['MAIL_USERNAME'] = os.environ.get("MAIL_USERNAME")
+app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASSWORD")
 mail = Mail(app)
 
+# ========================
+# 上傳檔案設定
+# ========================
+UPLOAD_FOLDER = "static/uploads"
+ALLOWED_EXTENSIONS = {"jpg", "png", "pdf", "zip", "docx"}
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5MB
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+def allowed_file(filename):
+    """檢查檔案副檔名是否允許上傳"""
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # ========================
 # 資料庫模型
@@ -54,37 +61,28 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
-    role = db.Column(db.String(20), nullable=False, default="student")
+    role = db.Column(db.String(20), default="student")  # student / admin
 
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
+    def set_password(self, pw):
+        self.password_hash = generate_password_hash(pw)
 
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+    def check_password(self, pw):
+        return check_password_hash(self.password_hash, pw)
 
 
-class Student(db.Model):
+class News(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    grade = db.Column(db.String(10))
-    courses = db.Column(db.Text)
-    scores = db.Column(db.Text)
-    user = db.relationship("User", backref="student_profile")
-
-
-class Grade(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    code = db.Column(db.String(20), unique=True, nullable=False)
-    name = db.Column(db.String(50), nullable=False)
-
-
-class Lesson(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    grade_id = db.Column(db.Integer, db.ForeignKey("grade.id"), nullable=False)
-    topic = db.Column(db.String(50), nullable=False)
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    grade = db.relationship("Grade", backref="lessons")
+    filename = db.Column(db.String(200))  # 上傳的檔名
+    date = db.Column(db.DateTime, default=datetime.utcnow)
+
+# ========================
+# 權限檢查
+# ========================
+def admin_required():
+    """檢查當前登入是否為管理員"""
+    return "user_id" in session and session.get("role") == "admin"
 
 # ========================
 # 路由
@@ -95,32 +93,17 @@ def root():
 
 @app.route("/home")
 def home():
-    grades = Grade.query.all()
-    return render_template("index.html", grades=grades)
+    return render_template("index.html")
 
-@app.route("/<grade_code>/<topic>")
-def lesson(grade_code, topic):
-    lesson = Lesson.query.join(Grade).filter(Grade.code == grade_code, Lesson.topic == topic).first()
-    if not lesson:
-        return "找不到課程", 404
-    return render_template(
-        "lesson.html",
-        grade_name=lesson.grade.name,
-        title=lesson.title,
-        content=lesson.content
-    )
+@app.route("/teaching")
+def teaching():
+    return render_template("teaching.html")
 
-# ========================
-# Google HTML 驗證
-# ========================
-@app.route('/google77b51b745d5d14fa.html')
-def google_verification():
-    # 把 Google 驗證 HTML 放在 static 目錄下
-    return send_from_directory('.', 'google77b51b745d5d14fa.html')
-
-# ========================
-# 聯絡我們
-# ========================
+@app.route("/news")
+def news():
+    news_list = News.query.order_by(News.date.desc()).all()
+    return render_template("news.html", news_list=news_list)
+#gmail聯絡
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
     if request.method == "POST":
@@ -155,7 +138,7 @@ def register():
         password = request.form["password"]
 
         if User.query.filter_by(username=username).first():
-            flash("帳號已存在")
+            flash("❌ 帳號已存在")
             return redirect(url_for("register"))
 
         user = User(username=username)
@@ -163,101 +146,157 @@ def register():
         db.session.add(user)
         db.session.commit()
 
-        student = Student(
-            user_id=user.id,
-            grade="",
-            courses=json.dumps({}),
-            scores=json.dumps({})
-        )
-        db.session.add(student)
-        db.session.commit()
-
         flash("✅ 註冊成功，請登入")
-        return redirect(url_for("home"))  # 註冊後回首頁登入 Modal 顯示
+        return redirect(url_for("login"))
 
     return render_template("register.html")
 
 # ========================
-# 登入（Modal 用）
+# 登入（分辨管理員與學生）
 # ========================
-@app.route("/login", methods=["POST"])
-@limiter.limit("5 per minute")
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    username = request.form.get("username")
-    password = request.form.get("password")
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
 
-    user = User.query.filter_by(username=username).first()
+        user = User.query.filter_by(username=username).first()
 
-    if user and user.check_password(password):
-        session["user_id"] = user.id
-        session["role"] = user.role
+        if user and user.check_password(password):
+            session.permanent = True  # 這裡設定為永久 session
+            session["user_id"] = user.id
+            session["role"] = user.role
 
-        if user.role == "student":
-            return redirect(url_for("student_dashboard"))
+            # 分流
+            if user.role == "admin":
+                return redirect(url_for("admin_users"))
+            else:
+                return redirect(url_for("home"))
 
-        return redirect(url_for("home"))
+        flash("❌ 帳號或密碼錯誤")
+        return redirect(url_for("login"))
 
-    flash("帳號或密碼錯誤！", "login_error")
+    return render_template("login.html")
+
+# ========================
+# 登出
+# ========================
+@app.route("/logout")
+def logout():
+    session.clear()
+    flash("✅ 已登出")
     return redirect(url_for("home"))
 
 # ========================
-# 學生專屬頁面
+# 管理員新增消息
 # ========================
-@app.route("/student")
-def student_dashboard():
-    if "user_id" not in session or session.get("role") != "student":
-        flash("請先登入學生帳號", "login_error")
+@app.route("/admin/news/new", methods=["GET", "POST"])
+def admin_new_news():
+    if "user_id" not in session or session.get("role") != "admin":
+        flash("❌ 無權限")
         return redirect(url_for("home"))
-
-    student = Student.query.filter_by(user_id=session["user_id"]).first()
-    courses = json.loads(student.courses) if student.courses else {}
-    scores = json.loads(student.scores) if student.scores else {}
-
-    return render_template(
-        "student.html",
-        student=student,
-        courses=courses,
-        scores=scores
-    )
-
-# ========================
-# 管理員新增課程
-# ========================
-@app.route("/admin/lesson/new", methods=["GET", "POST"])
-def admin_new_lesson():
-    grades = Grade.query.all()
 
     if request.method == "POST":
-        lesson = Lesson(
-            grade_id=request.form["grade_id"],
-            topic=request.form["topic"],
-            title=request.form["title"],
-            content=request.form["content"]
-        )
-        db.session.add(lesson)
+        title = request.form["title"]
+        content = request.form["content"]
+        file = request.files.get("image")  # 👈 這行修正
+
+        filename = None
+        if file and file.filename != "" and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+
+        news = News(title=title, content=content, filename=filename)
+        db.session.add(news)
         db.session.commit()
-        return redirect(url_for("home"))
 
-    return render_template("admin_new_lesson.html", grades=grades)
+        flash("✅ 最新消息已新增")
+        return redirect(url_for("news"))
 
+    return render_template("admin_new_news.html")
 
 
 # ========================
-# 初始化資料
+# 管理員管理使用者
+# ========================
+@app.route("/admin/users", methods=["GET", "POST"])
+def admin_users():
+    if not admin_required():
+        flash("❌ 無權限")
+        return redirect(url_for("home"))
+
+    users = User.query.all()
+
+    if request.method == "POST":
+        user_id = request.form.get("user_id")
+        action = request.form.get("action")
+        user = User.query.get(user_id)
+
+        if not user:
+            flash("❌ 找不到使用者")
+            return redirect(url_for("admin_users"))
+
+        if action == "promote":
+            user.role = "admin"
+            flash(f"✅ {user.username} 已升級為管理員")
+        elif action == "demote":
+            user.role = "student"
+            flash(f"✅ {user.username} 已降級為學生")
+
+        db.session.commit()
+        return redirect(url_for("admin_users"))
+
+    return render_template("admin_users.html", users=users)
+
+# ========================
+# Google 驗證
+# ========================
+@app.route("/google77b51b745d5d14fa.html")
+def google_verify():
+    return send_from_directory(".", "google77b51b745d5d14fa.html")
+
+# ========================
+# CLI 指令：升級帳號為管理員
+# ========================
+@app.cli.command("make-admin")
+def make_admin():
+    username = input("請輸入要升級的帳號：")
+    user = User.query.filter_by(username=username).first()
+
+    if not user:
+        print("❌ 找不到使用者")
+        return
+
+    user.role = "admin"
+    db.session.commit()
+    print(f"✅ {username} 已升級為管理員")
+#刪除文章
+@app.route("/admin/news/delete/<int:news_id>", methods=["POST"])
+def admin_delete_news(news_id):
+    # 權限檢查
+    if "user_id" not in session or session.get("role") != "admin":
+        flash("❌ 無權限")
+        return redirect(url_for("home"))
+
+    news = News.query.get_or_404(news_id)
+
+    # 如果有檔案 → 一起刪掉
+    if news.filename:
+        file_path = os.path.join(app.config["UPLOAD_FOLDER"], news.filename)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+    db.session.delete(news)
+    db.session.commit()
+
+    flash("🗑️ 消息已刪除")
+    return redirect(url_for("news"))
+
+
+# ========================
+# 啟動
 # ========================
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-
-        if Grade.query.count() == 0:
-            g7 = Grade(code="grade7", name="七年級數學")
-            db.session.add(g7)
-            db.session.commit()
-
-            db.session.add_all([
-                Lesson(grade_id=g7.id, topic="fraction", title="分數", content="分數由分子與分母組成"),
-                Lesson(grade_id=g7.id, topic="integer", title="整數", content="整數包含正負與 0")
-            ])
-            db.session.commit()
-
     app.run(debug=False)

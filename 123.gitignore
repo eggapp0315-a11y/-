@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+
+# Database
+*.db
+
+# Environment
+.env
+
+# Upload files
+static/uploads/
+
+# IDE
+.vscode/
+.idea/

@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="/static/style.css">
     <meta name="google-site-verification" content="qYZOcxRezo1JhvbCEADsiE4ow2B3GeXEmDgt--h3OPM" />
     <style>
-        /* 導航列 */
         nav {
             display: flex;
             justify-content: space-between;
@@ -29,11 +28,7 @@
             font-weight: bold;
             transition: color 0.3s;
         }
-        nav ul li a:hover {
-            color: #FFD700;
-        }
-
-        /* 登入按鈕 */
+        nav ul li a:hover { color: #FFD700; }
         .login-btn {
             background-color: white;
             color: #007BFF;
@@ -44,21 +39,8 @@
             cursor: pointer;
             transition: background 0.3s;
         }
-        .login-btn:hover {
-            background-color: #e0e0e0;
-        }
-
-        /* Modal CSS */
-        .modal {
-            display: none; /* 隱藏 */
-            position: fixed;
-            z-index: 1000;
-            left: 0; top: 0;
-            width: 100%; height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.5);
-        }
-
+        .login-btn:hover { background-color: #e0e0e0; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
         .modal-content {
             background-color: #fefefe;
             margin: 10% auto;
@@ -67,62 +49,16 @@
             width: 300px;
             position: relative;
         }
-
-        .modal-content h2 {
-            text-align: center;
-            margin-bottom: 16px;
-        }
-
-        .close {
-            position: absolute;
-            right: 12px;
-            top: 8px;
-            font-size: 24px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .modal-content form label {
-            display: block;
-            margin-top: 12px;
-            font-weight: 600;
-        }
-
-        .modal-content form input {
-            width: 100%;
-            padding: 8px;
-            margin-top: 4px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-        }
-
-        .modal-content form button {
-            margin-top: 16px;
-            width: 100%;
-            padding: 8px;
-            background: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        .modal-content form button:hover {
-            background: #0056b3;
-        }
-
-        .register-link {
-            text-align: center;
-            margin-top: 12px;
-        }
-        .register-link a {
-            color: #007BFF;
-            font-weight: bold;
-            text-decoration: none;
-        }
-        .register-link a:hover {
-            text-decoration: underline;
-        }
+        .modal-content h2 { text-align: center; margin-bottom: 16px; }
+        .close { position: absolute; right: 12px; top: 8px; font-size: 24px; font-weight: bold; cursor: pointer; }
+        .modal-content form label { display: block; margin-top: 12px; font-weight: 600; }
+        .modal-content form input { width: 100%; padding: 8px; margin-top: 4px; border-radius: 6px; border: 1px solid #ccc; }
+        .modal-content form button { margin-top: 16px; width: 100%; padding: 8px; background: #007BFF; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        .modal-content form button:hover { background: #0056b3; }
+        .register-link { text-align: center; margin-top: 12px; }
+        .register-link a { color: #007BFF; font-weight: bold; text-decoration: none; }
+        .register-link a:hover { text-decoration: underline; }
+        .welcome { color: white; font-weight: bold; margin-right: 12px; }
     </style>
 </head>
 <body>
@@ -138,8 +74,20 @@
             <li><a href="/news">最新消息</a></li>
         </ul>
 
-        <!-- 右側登入按鈕 -->
-        <button id="loginBtn" class="login-btn">登入</button>
+        <!-- 登入狀態 -->
+        <div>
+        {% if session.get('user_id') %}
+            <span class="welcome">歡迎 {{ session.get('role') }} {{ session.get('user_id') }}！</span>
+            {% if session.get('role') == 'admin' %}
+                <a href="{{ url_for('admin_new_news') }}" class="login-btn">新增消息</a>
+                <a href="{{ url_for('admin_users') }}" class="login-btn">管理使用者</a>
+            {% endif %}
+            <a href="{{ url_for('logout') }}" class="login-btn">登出</a>
+        {% else %}
+            <button id="loginBtn" class="login-btn">登入</button>
+            <a href="{{ url_for('register') }}" class="login-btn">註冊</a>
+        {% endif %}
+        </div>
     </nav>
 </header>
 
@@ -147,21 +95,20 @@
     <img src="/static/image/math.jpg" alt="數學教學">
     <div class="hero-text">
         從基礎開始，輕鬆學數學
-        上次更新2026/1/13 PM 7:51
     </div>
+    <p>
+    上次更新 2026 1/14 PM 6:15
+    </p>
 </section>
 
 <main class="container">
     <h2>請選擇年級與章節開始學習：</h2>
-
     {% for grade in grades %}
         <section class="grade-section">
             <div class="grade-title">{{ grade.name }}</div>
             <ul class="lesson-list">
                 {% for lesson in grade.lessons %}
-                    <li>
-                        <a href="/{{ grade.code }}/{{ lesson.topic }}">{{ lesson.title }}</a>
-                    </li>
+                    <li><a href="/{{ grade.code }}/{{ lesson.topic }}">{{ lesson.title }}</a></li>
                 {% endfor %}
             </ul>
         </section>
@@ -173,16 +120,13 @@
     <div class="modal-content">
         <span class="close">&times;</span>
         <h2>會員登入</h2>
-            {% with messages = get_flashed_messages(category_filter=["login_error"]) %}
-    {% if messages %}
-        <div class="login-error">
-            {{ messages[0] }}
-        </div>
-    {% endif %}
-    {% endwith %}
+        {% with messages = get_flashed_messages(category_filter=["login_error"]) %}
+        {% if messages %}
+            <div class="login-error">{{ messages[0] }}</div>
+        {% endif %}
+        {% endwith %}
 
-
-        <form action="/login" method="post">
+        <form action="{{ url_for('login') }}" method="post">
             <label>帳號：
                 <input type="text" name="username" required>
             </label>
@@ -192,7 +136,7 @@
             <button type="submit">登入</button>
         </form>
         <div class="register-link">
-            還沒有帳號？ <a href="/register">註冊</a>
+            還沒有帳號？ <a href="{{ url_for('register') }}">註冊</a>
         </div>
     </div>
 </div>
@@ -202,26 +146,17 @@
     const btn = document.getElementById("loginBtn");
     const span = document.querySelector(".modal .close");
 
-    btn.onclick = function() {
-        modal.style.display = "block";
+    if(btn) {
+        btn.onclick = function() { modal.style.display = "block"; }
     }
+    span.onclick = function() { modal.style.display = "none"; }
+    window.onclick = function(event) { if (event.target == modal) modal.style.display = "none"; }
 
-    span.onclick = function() {
-        modal.style.display = "none";
-    }
-
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
-    }
-</script>
-<script>
-{% with messages = get_flashed_messages(category_filter=["login_error"]) %}
-{% if messages %}
-    document.getElementById("loginModal").style.display = "block";
-{% endif %}
-{% endwith %}
+    {% with messages = get_flashed_messages(category_filter=["login_error"]) %}
+    {% if messages %}
+        document.getElementById("loginModal").style.display = "block";
+    {% endif %}
+    {% endwith %}
 </script>
 
 </body>
