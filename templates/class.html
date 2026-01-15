@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>課程表｜數學教學網站</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<!-- ===== Header ===== -->
+<header>
+    <h1>📅 課程表</h1>
+    <nav>
+        <a href="{{ url_for('home') }}">回首頁</a>
+    </nav>
+</header>
+
+<!-- ===== 主內容 ===== -->
+<main class="container">
+
+    <h2>本學期課程表</h2>
+
+    <div class="timetable-box">
+        <img
+            src="{{ url_for('static', filename='image/classtime.jpg') }}"
+            alt="課程表"
+            class="timetable-image"
+        >
+    </div>
+
+</main>
+
+</body>
+</html>

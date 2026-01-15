@@ -322,4 +322,25 @@ form button:hover {
 .delete-btn:hover {
     background-color: #b02a37;
 }
+.about-section {
+    margin-bottom: 24px;
+    line-height: 1.8;
+}
+
+.about-section h3 {
+    margin-top: 16px;
+    color: #007BFF;
+}
+.about-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    margin: 16px 0;
+}
+.about-image2 {
+    max-width: 50%;
+    height: auto;
+    border-radius: 10px;
+    margin: 16px 0;
+}
 

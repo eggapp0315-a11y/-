@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>關於我們｜數學教學網站</title>
+    <meta name="description" content="關於數學教學網站，我們致力於提供免費、清楚、有系統的國中數學教學內容。">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<!-- ======================
+     Header
+====================== -->
+<header>
+    <h1>📘 數學教學網站</h1>
+    <nav>
+        <a href="{{ url_for('home') }}">回首頁</a> |
+        <a href="{{ url_for('news') }}">最新消息</a> |
+        <a href="{{ url_for('contact') }}">聯絡我們</a>
+    </nav>
+</header>
+
+<!-- ======================
+     主內容
+====================== -->
+<main class="container">
+
+    <h2>關於我們</h2>
+
+    <section class="about-section">
+        <p>
+            我們是一個致力於打造<strong>免費、清楚、好理解</strong>的數學學習平台，
+            希望幫助學生從基礎建立正確的數學觀念，不再害怕數學。
+        </p>
+
+        <p>
+            本網站內容主要以<strong>國中數學</strong>為核心，
+            透過系統化章節、實例說明與循序漸進的方式，
+            協助學生在課業與考試中建立自信。
+        </p>
+    </section>
+
+    <section class="about-section">
+        <h3>🎯 我們的目標</h3>
+        <ul>
+            <li>讓每位學生都能理解數學，而不是死背公式</li>
+            <li>提供免費且無廣告干擾的學習環境</li>
+            <li>建立長期可持續更新的教學平台</li>
+        </ul>
+    </section>
+
+    <section class="about-section">
+        <h3>📚 適合對象</h3>
+        <ul>
+            <li>國中學生</li>
+            <li>想重新打好數學基礎的學習者</li>
+            <li>需要補充教材的家長與老師</li>
+        </ul>
+    </section>
+
+    <section class="about-section">
+        <h3>📬 聯絡我們</h3>
+        <p>
+            若您有任何建議或合作想法，歡迎前往
+            <a href="{{ url_for('contact') }}">聯絡我們</a> 與我們聯繫。
+        </p>
+    </section>
+    <img
+    src="{{ url_for('static', filename='image/季頡.jpg') }}"
+    alt="關於我們"
+    class="about-image"
+>
+
+    <img src="{{ url_for('static', filename='image/林蕭.jpg') }}", class="about-image2">
+    <img src="{{ url_for('static', filename='image/政澤.jpg') }}", class="about-image2">
+</main>
+
+</body>
+</html>

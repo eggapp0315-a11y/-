@@ -103,6 +103,17 @@ def teaching():
 def news():
     news_list = News.query.order_by(News.date.desc()).all()
     return render_template("news.html", news_list=news_list)
+
+#關於我們
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+#課程表
+@app.route("/class")
+def class_page():
+    return render_template("class.html")
+
 #gmail聯絡
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
