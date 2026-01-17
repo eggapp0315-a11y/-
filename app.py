@@ -24,11 +24,13 @@ app.permanent_session_lifetime = timedelta(days=7)
 db = SQLAlchemy(app)
 
 # 流量限制設定
+# 流量限制設定（新版 flask-limiter）
 limiter = Limiter(
-    get_remote_address,
-    app=app,
+    key_func=get_remote_address,
     default_limits=["200 per day", "50 per hour"]
 )
+limiter.init_app(app)
+
 
 # ========================
 # Gmail 郵件設定
