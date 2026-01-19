@@ -343,4 +343,8 @@ form button:hover {
     border-radius: 10px;
     margin: 16px 0;
 }
+.news-content {
+    white-space: pre-line;
+}
+
 
