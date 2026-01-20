@@ -2,161 +2,155 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <title>數學教學網站</title>
-    <meta name="description" content="免費國中教學網站，提供很多課程、學生登入、課表系統。">
+    <title>教師團隊網站</title>
+
+    <!-- SEO -->
+    <meta name="description" content="教師團隊網站，提供課程、課表、最新消息與會員系統。">
+    <meta name="google-site-verification" content="qYZOcxRezo1JhvbCEADsiE4ow2B3GeXEmDgt--h3OPM">
+
+    <!-- favicon -->
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="/static/style.css">
-    <meta name="google-site-verification" content="qYZOcxRezo1JhvbCEADsiE4ow2B3GeXEmDgt--h3OPM" />
-    <style>
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #007BFF;
-            padding: 10px 24px;
-        }
-        nav ul {
-            list-style: none;
-            display: flex;
-            gap: 20px;
-            margin: 0;
-            padding: 0;
-        }
-        nav ul li a {
-            color: white;
-            text-decoration: none;
-            font-weight: bold;
-            transition: color 0.3s;
-        }
-        nav ul li a:hover { color: #FFD700; }
-        .login-btn {
-            background-color: white;
-            color: #007BFF;
-            padding: 6px 16px;
-            border-radius: 6px;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        .login-btn:hover { background-color: #e0e0e0; }
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 10% auto;
-            padding: 20px;
-            border-radius: 10px;
-            width: 300px;
-            position: relative;
-        }
-        .modal-content h2 { text-align: center; margin-bottom: 16px; }
-        .close { position: absolute; right: 12px; top: 8px; font-size: 24px; font-weight: bold; cursor: pointer; }
-        .modal-content form label { display: block; margin-top: 12px; font-weight: 600; }
-        .modal-content form input { width: 100%; padding: 8px; margin-top: 4px; border-radius: 6px; border: 1px solid #ccc; }
-        .modal-content form button { margin-top: 16px; width: 100%; padding: 8px; background: #007BFF; color: white; border: none; border-radius: 6px; cursor: pointer; }
-        .modal-content form button:hover { background: #0056b3; }
-        .register-link { text-align: center; margin-top: 12px; }
-        .register-link a { color: #007BFF; font-weight: bold; text-decoration: none; }
-        .register-link a:hover { text-decoration: underline; }
-        .welcome { color: white; font-weight: bold; margin-right: 12px; }
-    </style>
+
+    <!-- 共用 CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
+<!-- ======================
+ Header / Navbar
+====================== -->
 <header>
-    <h1>📘 數學教學網站</h1>
+    <h1>教師團隊網站</h1>
+
     <nav>
         <ul>
-            <li><a href="/about">關於我們</a></li>
-            <li><a href="/contact">聯繫我們</a></li>
-            <li><a href="/heroes">英雄榜</a></li>
-            <li><a href="/teaching">教學理念</a></li>
-            <li><a href="/news">最新消息</a></li>
-            <li><a href="/class">課表</a></li>
+            <li><a href="{{ url_for('about') }}">關於我們</a></li>
+            <li><a href="{{ url_for('contact') }}">聯絡我們</a></li>
+            <li><a href="{{ url_for('teaching') }}">教學理念</a></li>
+            <li><a href="{{ url_for('news') }}">最新消息</a></li>
+            <li><a href="{{ url_for('class_page') }}">課表</a></li>
         </ul>
 
-        <!-- 登入狀態 -->
         <div>
-        {% if session.get('user_id') %}
-            <span class="welcome">歡迎 {{ session.get('role') }} {{ session.get('user_id') }}！</span>
-            {% if session.get('role') == 'admin' %}
-                <a href="{{ url_for('admin_new_news') }}" class="login-btn">新增消息</a>
-                <a href="{{ url_for('admin_users') }}" class="login-btn">管理使用者</a>
+            {% if session.get("user_id") %}
+                <span class="welcome">歡迎 {{ session.get("role") }}！</span>
+
+                {% if session.get("role") == "admin" %}
+                    <a href="{{ url_for('admin_new_news') }}" class="login-btn">新增消息</a>
+                    <a href="{{ url_for('admin_users') }}" class="login-btn">管理使用者</a>
+                {% endif %}
+
+                <a href="{{ url_for('logout') }}" class="login-btn">登出</a>
+            {% else %}
+                <button id="loginBtn" class="login-btn">登入</button>
+                <a href="{{ url_for('register') }}" class="login-btn">註冊</a>
             {% endif %}
-            <a href="{{ url_for('logout') }}" class="login-btn">登出</a>
-        {% else %}
-            <button id="loginBtn" class="login-btn">登入</button>
-            <a href="{{ url_for('register') }}" class="login-btn">註冊</a>
-        {% endif %}
         </div>
     </nav>
 </header>
 
+<!-- ======================
+ Hero / 輪播圖片
+====================== -->
 <section class="hero">
-    <img src="/static/image/math.jpg" alt="數學教學">
-    <div class="hero-text">
-        從基礎開始，輕鬆學數學
-        上次更新 2026/1/19 PM 1:33
+    <div class="slides">
+        <img src="/static/image/math.jpg" class="active" loading="eager" alt="數學教學 1">
+        <img src="/static/image/teach-photo.jpg" alt="數學教學 2">
+        <img src="/static/image/teach-photo2.jpg" alt="數學教學 3">
     </div>
 
+    <div class="hero-text">
+        從基礎開始，輕鬆學習<br>
+        上次更新：2026 / 01 / 19
+    </div>
 </section>
 
+<!-- ======================
+ 主內容
+====================== -->
 <main class="container">
-    <h2>請選擇年級與章節開始學習：</h2>
+    <h2>請選擇年級與章節開始學習</h2>
+
     {% for grade in grades %}
         <section class="grade-section">
             <div class="grade-title">{{ grade.name }}</div>
+
             <ul class="lesson-list">
                 {% for lesson in grade.lessons %}
-                    <li><a href="/{{ grade.code }}/{{ lesson.topic }}">{{ lesson.title }}</a></li>
+                    <li>
+                        <a href="/{{ grade.code }}/{{ lesson.topic }}">
+                            {{ lesson.title }}
+                        </a>
+                    </li>
                 {% endfor %}
             </ul>
         </section>
     {% endfor %}
 </main>
 
-<!-- 登入 Modal -->
+<!-- ======================
+ 登入 Modal
+====================== -->
 <div id="loginModal" class="modal">
     <div class="modal-content">
         <span class="close">&times;</span>
         <h2>會員登入</h2>
-        {% with messages = get_flashed_messages(category_filter=["login_error"]) %}
-        {% if messages %}
-            <div class="login-error">{{ messages[0] }}</div>
-        {% endif %}
-        {% endwith %}
 
         <form action="{{ url_for('login') }}" method="post">
-            <label>帳號：
+            <label>
+                帳號
                 <input type="text" name="username" required>
             </label>
-            <label>密碼：
+
+            <label>
+                密碼
                 <input type="password" name="password" required>
             </label>
+
             <button type="submit">登入</button>
         </form>
+
         <div class="register-link">
-            還沒有帳號？ <a href="{{ url_for('register') }}">註冊</a>
+            還沒有帳號？
+            <a href="{{ url_for('register') }}">註冊</a>
         </div>
     </div>
 </div>
 
+<!-- ======================
+ JS：圖片輪播（不白畫面）
+====================== -->
+<script>
+    let index = 0;
+    const slides = document.querySelectorAll(".slides img");
+    const total = slides.length;
+
+    setInterval(() => {
+        slides[index].classList.remove("active");
+        index = (index + 1) % total; // 1 → 2 → 3 → 1
+        slides[index].classList.add("active");
+    }, 3000); // 5 秒切換（順、不刺眼）
+</script>
+
+<!-- ======================
+ JS：登入視窗
+====================== -->
 <script>
     const modal = document.getElementById("loginModal");
     const btn = document.getElementById("loginBtn");
-    const span = document.querySelector(".modal .close");
+    const closeBtn = document.querySelector(".close");
 
-    if(btn) {
-        btn.onclick = function() { modal.style.display = "block"; }
+    if (btn) {
+        btn.onclick = () => modal.style.display = "block";
     }
-    span.onclick = function() { modal.style.display = "none"; }
-    window.onclick = function(event) { if (event.target == modal) modal.style.display = "none"; }
 
-    {% with messages = get_flashed_messages(category_filter=["login_error"]) %}
-    {% if messages %}
-        document.getElementById("loginModal").style.display = "block";
-    {% endif %}
-    {% endwith %}
+    closeBtn.onclick = () => modal.style.display = "none";
+
+    window.onclick = (e) => {
+        if (e.target === modal) {
+            modal.style.display = "none";
+        }
+    };
 </script>
 
 </body>
