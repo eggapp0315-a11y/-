@@ -388,6 +388,42 @@ form button:hover {
     text-shadow: 0 2px 6px rgba(0,0,0,0.6);
     text-align: center;
 }
+.hero-actions {
+    margin-top: 20px;
+}
+
+.btn-primary {
+    background: #ffcc00;
+    padding: 12px 26px;
+    border-radius: 30px;
+    font-weight: bold;
+    color: #333;
+    margin-right: 10px;
+}
+
+.btn-outline {
+    border: 2px solid white;
+    padding: 12px 26px;
+    border-radius: 30px;
+    color: white;
+}
+.features {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: #f5f7fa;
+    padding: 30px 0;
+    text-align: center;
+    font-weight: bold;
+}
+.hero-text2 {
+    font-size: 36px;
+    line-height: 1.4;
+}
+
+.hero-text2 span {
+    font-size: 20px;
+    opacity: 0.9;
+}
 
 
 /* ===== 動畫 ===== */

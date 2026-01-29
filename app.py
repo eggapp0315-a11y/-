@@ -33,15 +33,27 @@ limiter.init_app(app)
 
 
 # ========================
-# Gmail 郵件設定
-# ⚠️ 正式上線請改用環境變數
+# Gmail 郵件設定（穩定版）
 # ========================
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_USERNAME'] = os.environ.get("MAIL_USERNAME")
-app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASSWORD")
+MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
+MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+
+if not MAIL_USERNAME or not MAIL_PASSWORD:
+    raise RuntimeError("❌ MAIL_USERNAME 或 MAIL_PASSWORD 沒有設定成功")
+
+app.config.update(
+    MAIL_SERVER="smtp.gmail.com",
+    MAIL_PORT=465,
+    MAIL_USE_SSL=True,
+    MAIL_USERNAME=MAIL_USERNAME,
+    MAIL_PASSWORD=MAIL_PASSWORD,
+    MAIL_DEFAULT_SENDER=MAIL_USERNAME
+)
+
+print("✅ MAIL_USERNAME =", MAIL_USERNAME)
+
 mail = Mail(app)
+
 
 # ========================
 # 上傳檔案設定
@@ -120,24 +132,35 @@ def class_page():
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
     if request.method == "POST":
-        name = request.form["name"]
-        email = request.form["email"]
-        message = request.form["message"]
+        name = request.form.get("name")
+        grade = request.form.get("grade")
+        email = request.form.get("email")
+        message = request.form.get("message")
+
+        if not all([name, grade, email, message]):
+            flash("❌ 請完整填寫所有欄位", "error")
+            return redirect(url_for("contact"))
 
         msg = Message(
-            subject=f"聯絡我們訊息來自 {name}",
-            sender=app.config["MAIL_USERNAME"],
+            subject=f"📩 聯絡我們訊息來自 {name}",
             recipients=[app.config["MAIL_USERNAME"]],
-            body=f"姓名: {name}\nEmail: {email}\n訊息:\n{message}"
+            body=f"""姓名：{name}
+年級：{grade}
+Email：{email}
+
+訊息內容：
+{message}
+"""
         )
 
         try:
             mail.send(msg)
-            flash("✅ 訊息已送出", "success")
+            flash("✅ 訊息已成功送出，我們會盡快回覆你！", "success")
         except Exception as e:
-            flash(f"❌ 送信失敗：{e}", "error")
+            flash("❌ 送信失敗，請稍後再試或直接聯絡我們", "error")
+            print(e)
 
-        return redirect(url_for("home"))
+        return redirect(url_for("contact"))
 
     return render_template("contact.html")
 
@@ -305,11 +328,13 @@ def admin_delete_news(news_id):
     flash("🗑️ 消息已刪除")
     return redirect(url_for("news"))
 
+print("MAIL_USERNAME =", app.config["MAIL_USERNAME"])
+print("MAIL_PASSWORD =", "有設定" if app.config["MAIL_PASSWORD"] else "沒有")
 
 # ========================
 # 啟動
 # ========================
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
-    app.run(debug=False)
+     with app.app_context():
+         db.create_all()
+     app.run(debug=False)

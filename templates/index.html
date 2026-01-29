@@ -65,28 +65,42 @@
     </div>
 </section>
 
-<!-- ======================
- 主內容
-====================== -->
-<main class="container">
-    <h2>請選擇年級與章節開始學習</h2>
+<div class="hero-text2">
+  國高中學習不再卡關<br>
+  <span>一節課看懂一個觀念</span>
+</div>
 
-    {% for grade in grades %}
-        <section class="grade-section">
-            <div class="grade-title">{{ grade.name }}</div>
+<section class="features">
+  <div class="feature">
+    <div class="title">📘 國中全範圍</div>
+    <div class="desc">涵蓋國一～國三所有必學數學內容</div>
+  </div>
 
-            <ul class="lesson-list">
-                {% for lesson in grade.lessons %}
-                    <li>
-                        <a href="/{{ grade.code }}/{{ lesson.topic }}">
-                            {{ lesson.title }}
-                        </a>
-                    </li>
-                {% endfor %}
-            </ul>
-        </section>
-    {% endfor %}
-</main>
+  <div class="feature">
+    <div class="title">⏱ 每段 10 分鐘</div>
+    <div class="desc">短時間學習，專注不疲勞</div>
+  </div>
+
+  <div class="feature">
+    <div class="title">🧠 重點講解不卡關</div>
+    <div class="desc">只講考試會考的重點與易錯觀念</div>
+  </div>
+
+  <div class="feature">
+    <div class="title">🎈 平價補習</div>
+    <div class="desc">🎈 平價補習致力於為國中學生提供高品質、低負擔的學習資源，讓每一位學生都能在沒有經濟壓力的情況下，
+        <p>安心學習、穩定進步。我們的課程設計以「短時間、高效率」為核心，每段教學約 10 分鐘，重點清楚、不拖泥帶水，特別適合課後複習與考前加強。
+        教學內容涵蓋國中全範圍
+        </p>
+        <p>
+            ，從基礎觀念建立到重點題型解析，循序漸進，幫助學生真正理解，而不是死記公式。我們相信，學習不應該造成負擔，而是建立信心的過程。透過清楚的講解與免費的學習資源，🎈 平價補習希望陪伴學生一步步成長，讓數學不再困難，而是可以被掌握的能力。
+        </p>
+    </div>
+  </div>
+</section>
+
+
+
 
 <!-- ======================
  登入 Modal
