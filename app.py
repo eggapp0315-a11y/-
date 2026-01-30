@@ -23,13 +23,16 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.permanent_session_lifetime = timedelta(days=7)
 db = SQLAlchemy(app)
 
-# 流量限制設定
-# 流量限制設定（新版 flask-limiter）
+# ========================
+# 流量限制設定（Render 上線版）
+# ========================
 limiter = Limiter(
     key_func=get_remote_address,
-     default_limits=["200 per day", "50 per hour"]
- )
+    storage_uri=os.environ.get("REDIS_URL"),
+    default_limits=["200 per day", "50 per hour"]
+)
 limiter.init_app(app)
+
 
 
 
@@ -200,6 +203,7 @@ def register():
 # 登入（分辨管理員與學生）
 # ========================
 @app.route("/login", methods=["GET", "POST"])
+@limiter.limit("5 per minute")
 def login():
     if request.method == "POST":
         username = request.form["username"]
