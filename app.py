@@ -38,9 +38,6 @@ limiter.init_app(app)
 MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
 MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
 
-if not MAIL_USERNAME or not MAIL_PASSWORD:
-    raise RuntimeError("❌ MAIL_USERNAME 或 MAIL_PASSWORD 沒有設定成功")
-
 app.config.update(
     MAIL_SERVER="smtp.gmail.com",
     MAIL_PORT=465,
@@ -49,10 +46,12 @@ app.config.update(
     MAIL_PASSWORD=MAIL_PASSWORD,
     MAIL_DEFAULT_SENDER=MAIL_USERNAME
 )
-
 print("✅ MAIL_USERNAME =", MAIL_USERNAME)
-
 mail = Mail(app)
+
+
+
+
 
 
 # ========================
@@ -137,8 +136,8 @@ def contact():
         email = request.form.get("email")
         message = request.form.get("message")
 
-        if not all([name, grade, email, message]):
-            flash("❌ 請完整填寫所有欄位", "error")
+        if not app.config["MAIL_USERNAME"] or not app.config["MAIL_PASSWORD"]:
+            flash("❌ 郵件功能尚未設定完成，請改用 IG / Line 聯絡", "error")
             return redirect(url_for("contact"))
 
         msg = Message(
@@ -172,9 +171,17 @@ def register():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
+        confirm_password = request.form["confirm_password"]
+
+        if password != confirm_password:
+            flash("❌ 兩次輸入的密碼不一致")
+            return redirect(url_for("register"))
 
         if User.query.filter_by(username=username).first():
             flash("❌ 帳號已存在")
+            return redirect(url_for("register"))
+        if len(password) < 6:
+            flash("❌ 密碼至少 6 碼")
             return redirect(url_for("register"))
 
         user = User(username=username)
@@ -186,6 +193,7 @@ def register():
         return redirect(url_for("login"))
 
     return render_template("register.html")
+
 
 # ========================
 # 登入（分辨管理員與學生）
