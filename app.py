@@ -27,9 +27,10 @@ db = SQLAlchemy(app)
 # 流量限制設定（新版 flask-limiter）
 limiter = Limiter(
     key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"]
-)
+     default_limits=["200 per day", "50 per hour"]
+ )
 limiter.init_app(app)
+
 
 
 # ========================
@@ -180,8 +181,8 @@ def register():
         if User.query.filter_by(username=username).first():
             flash("❌ 帳號已存在")
             return redirect(url_for("register"))
-        if len(password) < 6:
-            flash("❌ 密碼至少 6 碼")
+        if len(password) == 4:
+            flash("❌ 密碼至少 4 碼")
             return redirect(url_for("register"))
 
         user = User(username=username)
@@ -346,6 +347,7 @@ if __name__ == "__main__":
      with app.app_context():
          db.create_all()
      app.run(debug=False)
+
 
 
 
