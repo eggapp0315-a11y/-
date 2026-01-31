@@ -3,15 +3,14 @@ from flask import (
     flash, url_for, session, send_from_directory
 )
 from flask_sqlalchemy import SQLAlchemy
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import os
 from datetime import timedelta
 from flask_mail import Mail, Message
-
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 # ========================
 # Flask 基本設定
@@ -27,12 +26,11 @@ db = SQLAlchemy(app)
 # 流量限制設定（Render 上線版）
 # ========================
 limiter = Limiter(
-    key_func=get_remote_address,
-    storage_uri=os.environ.get("REDIS_URL"),
-    default_limits=["200 per day", "50 per hour"]
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
 )
-limiter.init_app(app)
-
 
 
 
