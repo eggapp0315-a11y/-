@@ -26,12 +26,11 @@ db = SQLAlchemy(app)
 # 流量限制設定（Render 上線版）
 # ========================
 limiter = Limiter(
-    get_remote_address,
-    app=app,
-    default_limits=["200 per day", "50 per hour"],
+    key_func=get_remote_address,
     storage_uri="memory://"
 )
 
+limiter.init_app(app)
 
 
 # ========================
