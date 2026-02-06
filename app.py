@@ -17,12 +17,17 @@ import os
 # Flask 基本設定
 # ========================
 app = Flask(__name__)
-app.secret_key = "你的密鑰"
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///math.db"
+# 🔐 功能：使用 Render 的環境變數當 SECRET_KEY
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
+    "DATABASE_URL",
+    "sqlite:///math.db"
+)
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.permanent_session_lifetime = timedelta(days=7)
 
 db = SQLAlchemy(app)
+
 
 # ========================
 # 流量限制（防止暴力登入）
