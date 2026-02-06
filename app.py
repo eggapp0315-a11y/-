@@ -143,6 +143,15 @@ def contact():
         email = request.form.get("email")
         message = request.form.get("message")
 
+        # 【功能】偵測是否在 Render（Render 會有 RENDER 環境變數）
+        on_render = os.environ.get("RENDER") is not None
+
+        # 【功能】在 Render 不寄信，避免 WORKER TIMEOUT
+        if on_render:
+            flash("✅ 已收到訊息（測試環境不寄送郵件）")
+            return redirect(url_for("contact"))
+
+        # 【功能】本機才真的寄 Gmail
         if not MAIL_USERNAME or not MAIL_PASSWORD:
             flash("❌ 郵件尚未設定完成")
             return redirect(url_for("contact"))
@@ -162,12 +171,14 @@ Email：{email}
         try:
             mail.send(msg)
             flash("✅ 已成功送出")
-        except Exception:
+        except Exception as e:
+            print(e)
             flash("❌ 寄送失敗")
 
         return redirect(url_for("contact"))
 
     return render_template("contact.html")
+
 
 # ========================
 # 註冊
