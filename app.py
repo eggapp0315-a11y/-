@@ -18,6 +18,8 @@ import os
 # ========================
 app = Flask(__name__)
 # 🔐 功能：使用 Render 的環境變數當 SECRET_KEY
+app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
+
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
     "DATABASE_URL",
     "sqlite:///math.db"
