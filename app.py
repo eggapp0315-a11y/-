@@ -17,14 +17,19 @@ import os
 # Flask 基本設定
 # ========================
 app = Flask(__name__)
+
 # 🔐 功能：使用 Render 的環境變數當 SECRET_KEY
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
 
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
-    "DATABASE_URL",
-    "sqlite:///math.db"
-)
+# ========================
+# 資料庫設定（修正 Render PostgreSQL 問題）
+# ========================
+database_url = os.environ.get("DATABASE_URL")
 
+if database_url and database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url or "sqlite:///math.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.permanent_session_lifetime = timedelta(days=7)
 
