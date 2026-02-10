@@ -78,25 +78,42 @@ def allowed_file(filename):
 # ========================
 # 資料庫模型
 # ========================
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    # 👤 使用者帳號（唯一）
     username = db.Column(db.String(50), unique=True, nullable=False)
-    password_hash = db.Column(db.String(225), nullable=False)
-    role = db.Column(db.String(20), default="student")  # student / admin
 
+    # 🔐 密碼雜湊（使用 Text，避免長度不足造成 500 錯誤）
+    password_hash = db.Column(db.Text, nullable=False)
+
+    # 🧑‍🎓 使用者角色：student / admin
+    role = db.Column(db.String(20), default="student")
+
+    # 設定密碼（自動產生安全雜湊）
     def set_password(self, pw):
         self.password_hash = generate_password_hash(pw)
 
+    # 驗證密碼
     def check_password(self, pw):
         return check_password_hash(self.password_hash, pw)
 
 
 class News(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+
+    # 📰 最新消息標題
     title = db.Column(db.String(100), nullable=False)
+
+    # 📝 最新消息內容（可很長）
     content = db.Column(db.Text, nullable=False)
+
+    # 📎 附件檔名（可選）
     filename = db.Column(db.String(200))
+
+    # 📅 發布時間
     date = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 # ========================
 # 管理員權限 decorator
@@ -329,7 +346,9 @@ def google_verify():
 # 啟動 & 自動建立資料表
 # ========================
 with app.app_context():
-    db.create_all()
+    db.drop_all()     # 刪除舊資料表
+    db.create_all()   # 建立新資料表
+
 
 if __name__ == "__main__":
     app.run(debug=False)
