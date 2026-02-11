@@ -159,6 +159,7 @@ def class_page():
 # ========================
 # 聯絡我們（Gmail）
 # ========================
+# 聯絡我們（Gmail）
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
     if request.method == "POST":
@@ -167,15 +168,6 @@ def contact():
         email = request.form.get("email")
         message = request.form.get("message")
 
-        # 【功能】偵測是否在 Render（Render 會有 RENDER 環境變數）
-        on_render = os.environ.get("RENDER") is not None
-
-        # 【功能】在 Render 不寄信，避免 WORKER TIMEOUT
-        if on_render:
-            flash("✅ 已收到訊息（測試環境不寄送郵件）")
-            return redirect(url_for("contact"))
-
-        # 【功能】本機才真的寄 Gmail
         if not MAIL_USERNAME or not MAIL_PASSWORD:
             flash("❌ 郵件尚未設定完成")
             return redirect(url_for("contact"))
@@ -346,7 +338,7 @@ def google_verify():
 # 啟動 & 自動建立資料表
 # ========================
 with app.app_context():
-    db.drop_all()     # 刪除舊資料表
+    # db.drop_all()     # 刪除舊資料表
     db.create_all()   # 建立新資料表
 
 
