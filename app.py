@@ -17,15 +17,12 @@ import os
 # Flask 基本設定
 # ========================
 app = Flask(__name__)
-
-# 🔐 功能：使用 Render 的環境變數當 SECRET_KEY
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
 
 # ========================
-# 資料庫設定（修正 Render PostgreSQL 問題）
+# 資料庫設定
 # ========================
 database_url = os.environ.get("DATABASE_URL")
-
 if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
@@ -34,7 +31,6 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.permanent_session_lifetime = timedelta(days=7)
 
 db = SQLAlchemy(app)
-
 
 # ========================
 # 流量限制（防止暴力登入）
@@ -72,52 +68,42 @@ app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5MB
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 def allowed_file(filename):
-    """【功能】檢查檔案副檔名是否合法"""
+    """檢查檔案副檔名是否合法"""
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # ========================
 # 資料庫模型
 # ========================
-
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    # 👤 使用者帳號（唯一）
     username = db.Column(db.String(50), unique=True, nullable=False)
-
-    # 🔐 密碼雜湊（使用 Text，避免長度不足造成 500 錯誤）
     password_hash = db.Column(db.Text, nullable=False)
-
-    # 🧑‍🎓 使用者角色：student / admin
     role = db.Column(db.String(20), default="student")
 
-    # 設定密碼（自動產生安全雜湊）
     def set_password(self, pw):
         self.password_hash = generate_password_hash(pw)
 
-    # 驗證密碼
     def check_password(self, pw):
         return check_password_hash(self.password_hash, pw)
 
-
 class News(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-
-    # 📰 最新消息標題
     title = db.Column(db.String(100), nullable=False)
-
-    # 📝 最新消息內容（可很長）
     content = db.Column(db.Text, nullable=False)
-
-    # 📎 附件檔名（可選）
     filename = db.Column(db.String(200))
-
-    # 📅 發布時間
     date = db.Column(db.DateTime, default=datetime.utcnow)
 
+class ContactMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    grade = db.Column(db.String(20))
+    email = db.Column(db.String(120))
+    message = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    replied = db.Column(db.Boolean, default=False)
 
 # ========================
 # 管理員權限 decorator
-# 【功能】保護所有 admin 頁面
 # ========================
 def admin_required(f):
     @wraps(f)
@@ -157,7 +143,7 @@ def class_page():
     return render_template("class.html")
 
 # ========================
-# 聯絡我們（安全版）
+# 聯絡我們（資料庫版本）
 # ========================
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
@@ -167,44 +153,89 @@ def contact():
         email = request.form.get("email")
         message = request.form.get("message")
 
-        # 判斷是否在 Render
-        on_render = os.environ.get("RENDER") is not None
-
-        # Render 上不寄信，避免 WORKER TIMEOUT
-        if on_render:
-            # 之後可改成存資料庫 / webhook
-            flash("✅ 已收到您的訊息，我們會盡快與您聯絡")
+        if not name or not message:
+            flash("❌ 請填寫必要欄位")
             return redirect(url_for("contact"))
 
-        # 本機或其他環境才寄 Gmail
-        if not MAIL_USERNAME or not MAIL_PASSWORD:
-            flash("❌ 郵件系統尚未設定完成")
-            return redirect(url_for("contact"))
-
-        msg = Message(
-            subject=f"📩 聯絡訊息來自 {name}",
-            recipients=[MAIL_USERNAME],
-            body=f"""姓名：{name}
-年級：{grade}
-Email：{email}
-
-內容：
-{message}
-"""
+        contact_msg = ContactMessage(
+            name=name,
+            grade=grade,
+            email=email,
+            message=message
         )
 
         try:
-            mail.send(msg)
-            flash("✅ 已成功送出")
+            db.session.add(contact_msg)
+            db.session.commit()
+            flash("✅ 已成功送出，我們會盡快與您聯絡")
         except Exception as e:
-            print("MAIL ERROR:", e)
-            flash("❌ 郵件系統暫時忙碌，請稍後再試")
+            db.session.rollback()
+            print("DB ERROR:", e)
+            flash("❌ 系統錯誤，請稍後再試")
 
         return redirect(url_for("contact"))
 
     return render_template("contact.html")
 
+# ========================
+# 管理員訊息列表
+# ========================
+@app.route("/admin/contacts")
+@admin_required
+def admin_contacts():
+    messages = ContactMessage.query.order_by(ContactMessage.created_at.desc()).all()
+    return render_template("admin_contacts.html", messages=messages)
 
+# ========================
+# 管理員回覆訊息
+# ========================
+@app.route("/admin/contacts/reply/<int:msg_id>", methods=["GET", "POST"])
+@admin_required
+def reply_contact(msg_id):
+    msg = ContactMessage.query.get_or_404(msg_id)
+
+    if request.method == "POST":
+        reply_text = request.form.get("reply")
+
+        from sendgrid import SendGridAPIClient
+        from sendgrid.helpers.mail import Mail
+
+        sg_key = os.environ.get("SENDGRID_API_KEY")
+        mail_from = os.environ.get("MAIL_FROM")
+
+        if not sg_key or not mail_from:
+            flash("❌ 郵件系統未設定")
+            return redirect(url_for("admin_contacts"))
+
+        mail = Mail(
+            from_email=mail_from,
+            to_emails=msg.email,
+            subject="回覆您的聯絡訊息",
+            plain_text_content=reply_text
+        )
+
+        try:
+            sg = SendGridAPIClient(sg_key)
+            sg.send(mail)
+            msg.replied = True
+            db.session.commit()
+            flash("✅ 已成功回覆")
+        except Exception as e:
+            db.session.rollback()
+            print("SENDGRID ERROR:", e)
+            flash("❌ 寄信失敗")
+
+        return redirect(url_for("admin_contacts"))
+
+    return render_template("reply_contact.html", msg=msg)
+
+# ========================
+# 查看所有訊息 ID 與 Email
+# ========================
+with app.app_context():
+    messages = ContactMessage.query.all()
+    for msg in messages:
+        print(msg.id, msg.email, msg.replied)
 
 # ========================
 # 註冊
@@ -251,7 +282,6 @@ def login():
             session.permanent = True
             session["user_id"] = user.id
             session["role"] = user.role
-
             return redirect(url_for("admin_users") if user.role == "admin" else url_for("home"))
 
         flash("❌ 帳號或密碼錯誤")
@@ -280,14 +310,12 @@ def admin_new_news():
 
         filename = None
         if file and allowed_file(file.filename):
-            # 【功能】避免檔名重複覆蓋
             ext = file.filename.rsplit(".", 1)[1].lower()
             filename = f"{uuid.uuid4().hex}.{ext}"
             file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
 
         db.session.add(News(title=title, content=content, filename=filename))
         db.session.commit()
-
         flash("✅ 新消息已新增")
         return redirect(url_for("news"))
 
@@ -300,19 +328,15 @@ def admin_new_news():
 @admin_required
 def admin_users():
     users = User.query.all()
-
     if request.method == "POST":
         user = User.query.get(request.form.get("user_id"))
         action = request.form.get("action")
-
         if action == "demote" and user.id == session["user_id"]:
             flash("❌ 不能降級自己")
             return redirect(url_for("admin_users"))
-
         user.role = "admin" if action == "promote" else "student"
         db.session.commit()
         flash("✅ 權限已更新")
-
     return render_template("admin_users.html", users=users)
 
 # ========================
@@ -322,16 +346,13 @@ def admin_users():
 @admin_required
 def admin_delete_news(news_id):
     news = News.query.get_or_404(news_id)
-
     if news.filename:
         path = os.path.join(app.config["UPLOAD_FOLDER"], news.filename)
         if os.path.exists(path):
             os.remove(path)
-
     db.session.delete(news)
     db.session.commit()
     flash("🗑️ 消息已刪除")
-
     return redirect(url_for("news"))
 
 # ========================
@@ -342,15 +363,10 @@ def google_verify():
     return send_from_directory(".", "google77b51b745d5d14fa.html")
 
 # ========================
-# 啟動
-# ========================
-# ========================
-# 啟動 & 自動建立資料表
+# 啟動 & 建立資料表
 # ========================
 with app.app_context():
-    # db.drop_all()     # 刪除舊資料表
-    db.create_all()   # 建立新資料表
-
+    db.create_all()
 
 if __name__ == "__main__":
     app.run(debug=False)

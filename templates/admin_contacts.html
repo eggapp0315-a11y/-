@@ -1,0 +1,37 @@
+<h2>聯絡訊息管理</h2>
+
+<table border="1" cellpadding="8">
+  <tr>
+    <th>ID</th>
+    <th>時間</th>
+    <th>姓名</th>
+    <th>Email</th>
+    <th>內容</th>
+    <th>狀態</th>
+    <th>操作</th>
+  </tr>
+
+  {% for m in messages %}
+  <tr>
+    <td>{{ m.id }}</td> <!-- 顯示訊息 ID -->
+    <td>{{ m.created_at }}</td>
+    <td>{{ m.name }}</td>
+    <td>{{ m.email }}</td>
+    <td>{{ m.message }}</td>
+    <td>
+      {% if m.replied %}
+        ✅ 已回覆
+      {% else %}
+        ⏳ 未回覆
+      {% endif %}
+    </td>
+    <td>
+      {% if not m.replied %}
+        <a href="{{ url_for('reply_contact', msg_id=m.id) }}">回覆</a>
+      {% else %}
+        —
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</table>

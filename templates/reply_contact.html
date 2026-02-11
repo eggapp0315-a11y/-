@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>回覆聯絡訊息</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .container { max-width: 600px; margin: auto; }
+    label { display: block; margin-top: 15px; font-weight: bold; }
+    input, textarea { width: 100%; padding: 8px; margin-top: 5px; }
+    textarea { resize: vertical; height: 150px; }
+    button { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
+    .message-info { background: #f2f2f2; padding: 10px; border-radius: 5px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>回覆聯絡訊息</h2>
+
+    <div class="message-info">
+      <p><strong>姓名：</strong> {{ msg.name }}</p>
+      <p><strong>Email：</strong> {{ msg.email }}</p>
+      {% if msg.grade %}
+      <p><strong>年級：</strong> {{ msg.grade }}</p>
+      {% endif %}
+      <p><strong>內容：</strong> {{ msg.message }}</p>
+      <p><strong>時間：</strong> {{ msg.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+      <p><strong>狀態：</strong>
+        {% if msg.replied %}
+          ✅ 已回覆
+        {% else %}
+          ⏳ 未回覆
+        {% endif %}
+      </p>
+    </div>
+
+    {% if not msg.replied %}
+    <form method="POST">
+      <label for="reply">回覆內容：</label>
+      <textarea name="reply" id="reply" required></textarea>
+
+      <button type="submit">送出回覆</button>
+    </form>
+    {% else %}
+      <p>此訊息已回覆，不可再次修改。</p>
+    {% endif %}
+
+    <p><a href="{{ url_for('admin_contacts') }}">⬅ 返回訊息列表</a></p>
+  </div>
+</body>
+</html>
