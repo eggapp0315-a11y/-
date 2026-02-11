@@ -157,9 +157,8 @@ def class_page():
     return render_template("class.html")
 
 # ========================
-# 聯絡我們（Gmail）
+# 聯絡我們（安全版）
 # ========================
-# 聯絡我們（Gmail）
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
     if request.method == "POST":
@@ -168,8 +167,18 @@ def contact():
         email = request.form.get("email")
         message = request.form.get("message")
 
+        # 判斷是否在 Render
+        on_render = os.environ.get("RENDER") is not None
+
+        # Render 上不寄信，避免 WORKER TIMEOUT
+        if on_render:
+            # 之後可改成存資料庫 / webhook
+            flash("✅ 已收到您的訊息，我們會盡快與您聯絡")
+            return redirect(url_for("contact"))
+
+        # 本機或其他環境才寄 Gmail
         if not MAIL_USERNAME or not MAIL_PASSWORD:
-            flash("❌ 郵件尚未設定完成")
+            flash("❌ 郵件系統尚未設定完成")
             return redirect(url_for("contact"))
 
         msg = Message(
@@ -188,12 +197,13 @@ Email：{email}
             mail.send(msg)
             flash("✅ 已成功送出")
         except Exception as e:
-            print(e)
-            flash("❌ 寄送失敗")
+            print("MAIL ERROR:", e)
+            flash("❌ 郵件系統暫時忙碌，請稍後再試")
 
         return redirect(url_for("contact"))
 
     return render_template("contact.html")
+
 
 
 # ========================
