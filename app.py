@@ -262,6 +262,18 @@ def contact():
 
     return render_template("contact.html")
 
+@app.route("/admin/users")
+def admin_users():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user = User.query.get(session["user_id"])
+    if not user or user.role != "admin":
+        return redirect(url_for("home"))
+
+    users = User.query.all()
+    return render_template("admin_users.html", users=users)
+
 
 # ========================
 # 管理員訊息列表
