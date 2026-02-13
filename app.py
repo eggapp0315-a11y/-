@@ -156,6 +156,76 @@ def about():
 def class_page():
     return render_template("class.html")
 
+# ========================
+# 註冊
+# ========================
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        confirm = request.form["confirm_password"]
+
+        if password != confirm:
+            flash("❌ 密碼不一致")
+            return redirect(url_for("register"))
+
+        if len(password) < 4:
+            flash("❌ 密碼至少 4 碼")
+            return redirect(url_for("register"))
+
+        if User.query.filter_by(username=username).first():
+            flash("❌ 帳號已存在")
+            return redirect(url_for("register"))
+
+        user = User(username=username)
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+
+        flash("✅ 註冊成功")
+        return redirect(url_for("login"))
+
+    return render_template("register.html")
+
+
+# ========================
+# 登入
+# ========================
+@app.route("/login", methods=["GET", "POST"])
+@limiter.limit("90 per minute")
+def login():
+    if request.method == "POST":
+        user = User.query.filter_by(
+            username=request.form["username"]
+        ).first()
+
+        if user and user.check_password(request.form["password"]):
+            session.permanent = True
+            session["user_id"] = user.id
+            session["role"] = user.role
+
+            return redirect(
+                url_for("admin_users")
+                if user.role == "admin"
+                else url_for("home")
+            )
+
+        flash("❌ 帳號或密碼錯誤")
+
+    return render_template("login.html")
+
+
+# ========================
+# 登出
+# ========================
+@app.route("/logout")
+def logout():
+    session.clear()
+    flash("✅ 已登出")
+    return redirect(url_for("home"))
+
+
 
 # ========================
 # 聯絡我們
