@@ -4,15 +4,15 @@ from flask import (
 )
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-
 from datetime import datetime, timedelta
-from flask_mail import Mail, Message
+from flask_mail import Mail
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from functools import wraps   # 【功能】權限 decorator
-import uuid                   # 【功能】產生唯一檔名
+from functools import wraps
+import uuid
 import os
 from flask_migrate import Migrate
+
 # ========================
 # Flask 基本設定
 # ========================
@@ -32,8 +32,9 @@ app.permanent_session_lifetime = timedelta(days=7)
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+
 # ========================
-# 流量限制（防止暴力登入）
+# 流量限制
 # ========================
 limiter = Limiter(
     key_func=get_remote_address,
@@ -42,33 +43,29 @@ limiter = Limiter(
 limiter.init_app(app)
 
 # ========================
-# Gmail 郵件設定
+# Gmail 設定
 # ========================
-MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
-MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
-
 app.config.update(
     MAIL_SERVER="smtp.gmail.com",
     MAIL_PORT=465,
     MAIL_USE_SSL=True,
-    MAIL_USERNAME=MAIL_USERNAME,
-    MAIL_PASSWORD=MAIL_PASSWORD,
-    MAIL_DEFAULT_SENDER=MAIL_USERNAME
+    MAIL_USERNAME=os.environ.get("MAIL_USERNAME"),
+    MAIL_PASSWORD=os.environ.get("MAIL_PASSWORD"),
+    MAIL_DEFAULT_SENDER=os.environ.get("MAIL_USERNAME")
 )
 
 mail = Mail(app)
 
 # ========================
-# 上傳檔案設定
+# 上傳設定
 # ========================
 UPLOAD_FOLDER = "static/uploads"
 ALLOWED_EXTENSIONS = {"jpg", "png", "pdf", "zip", "docx"}
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5MB
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 def allowed_file(filename):
-    """檢查檔案副檔名是否合法"""
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # ========================
@@ -86,12 +83,14 @@ class User(db.Model):
     def check_password(self, pw):
         return check_password_hash(self.password_hash, pw)
 
+
 class News(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     filename = db.Column(db.String(200))
     date = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 class ContactMessage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -103,7 +102,7 @@ class ContactMessage(db.Model):
     replied = db.Column(db.Boolean, default=False)
 
 # ========================
-# 管理員權限 decorator
+# 管理員權限
 # ========================
 def admin_required(f):
     @wraps(f)
@@ -125,26 +124,11 @@ def root():
 def home():
     return render_template("index.html")
 
-@app.route("/teaching")
-def teaching():
-    return render_template("teaching.html")
-
 @app.route("/news")
 def news():
     news_list = News.query.order_by(News.date.desc()).all()
     return render_template("news.html", news_list=news_list)
 
-@app.route("/about")
-def about():
-    return render_template("about.html")
-
-@app.route("/class")
-def class_page():
-    return render_template("class.html")
-
-# ========================
-# 聯絡我們（資料庫版本）
-# ========================
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
     if request.method == "POST":
@@ -164,15 +148,9 @@ def contact():
             message=message
         )
 
-        try:
-            db.session.add(contact_msg)
-            db.session.commit()
-            flash("✅ 已成功送出，我們會盡快與您聯絡")
-        except Exception as e:
-            db.session.rollback()
-            print("DB ERROR:", e)
-            flash("❌ 系統錯誤，請稍後再試")
-
+        db.session.add(contact_msg)
+        db.session.commit()
+        flash("✅ 已成功送出")
         return redirect(url_for("contact"))
 
     return render_template("contact.html")
@@ -183,11 +161,13 @@ def contact():
 @app.route("/admin/contacts")
 @admin_required
 def admin_contacts():
-    messages = ContactMessage.query.order_by(ContactMessage.created_at.desc()).all()
+    messages = ContactMessage.query.order_by(
+        ContactMessage.created_at.desc()
+    ).all()
     return render_template("admin_contacts.html", messages=messages)
 
 # ========================
-# 管理員回覆訊息
+# 管理員回覆
 # ========================
 @app.route("/admin/contacts/reply/<int:msg_id>", methods=["GET", "POST"])
 @admin_required
@@ -230,142 +210,14 @@ def reply_contact(msg_id):
     return render_template("reply_contact.html", msg=msg)
 
 # ========================
-# 查看所有訊息 ID 與 Email
-# ========================
-with app.app_context():
-    messages = ContactMessage.query.all()
-    for msg in messages:
-        print(msg.id, msg.email, msg.replied)
-
-# ========================
-# 註冊
-# ========================
-@app.route("/register", methods=["GET", "POST"])
-def register():
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-        confirm = request.form["confirm_password"]
-
-        if password != confirm:
-            flash("❌ 密碼不一致")
-            return redirect(url_for("register"))
-
-        if len(password) < 4:
-            flash("❌ 密碼至少 4 碼")
-            return redirect(url_for("register"))
-
-        if User.query.filter_by(username=username).first():
-            flash("❌ 帳號已存在")
-            return redirect(url_for("register"))
-
-        user = User(username=username)
-        user.set_password(password)
-        db.session.add(user)
-        db.session.commit()
-
-        flash("✅ 註冊成功")
-        return redirect(url_for("login"))
-
-    return render_template("register.html")
-
-# ========================
-# 登入（限制 5 次/分鐘）
-# ========================
-@app.route("/login", methods=["GET", "POST"])
-@limiter.limit("90 per minute")
-def login():
-    if request.method == "POST":
-        user = User.query.filter_by(username=request.form["username"]).first()
-
-        if user and user.check_password(request.form["password"]):
-            session.permanent = True
-            session["user_id"] = user.id
-            session["role"] = user.role
-            return redirect(url_for("admin_users") if user.role == "admin" else url_for("home"))
-
-        flash("❌ 帳號或密碼錯誤")
-
-    return render_template("login.html")
-
-# ========================
-# 登出
-# ========================
-@app.route("/logout")
-def logout():
-    session.clear()
-    flash("✅ 已登出")
-    return redirect(url_for("home"))
-
-# ========================
-# 管理員：新增消息
-# ========================
-@app.route("/admin/news/new", methods=["GET", "POST"])
-@admin_required
-def admin_new_news():
-    if request.method == "POST":
-        title = request.form["title"]
-        content = request.form["content"]
-        file = request.files.get("image")
-
-        filename = None
-        if file and allowed_file(file.filename):
-            ext = file.filename.rsplit(".", 1)[1].lower()
-            filename = f"{uuid.uuid4().hex}.{ext}"
-            file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-
-        db.session.add(News(title=title, content=content, filename=filename))
-        db.session.commit()
-        flash("✅ 新消息已新增")
-        return redirect(url_for("news"))
-
-    return render_template("admin_new_news.html")
-
-# ========================
-# 管理員：使用者管理
-# ========================
-@app.route("/admin/users", methods=["GET", "POST"])
-@admin_required
-def admin_users():
-    users = User.query.all()
-    if request.method == "POST":
-        user = User.query.get(request.form.get("user_id"))
-        action = request.form.get("action")
-        if action == "demote" and user.id == session["user_id"]:
-            flash("❌ 不能降級自己")
-            return redirect(url_for("admin_users"))
-        user.role = "admin" if action == "promote" else "student"
-        db.session.commit()
-        flash("✅ 權限已更新")
-    return render_template("admin_users.html", users=users)
-
-# ========================
-# 管理員：刪除消息
-# ========================
-@app.route("/admin/news/delete/<int:news_id>", methods=["POST"])
-@admin_required
-def admin_delete_news(news_id):
-    news = News.query.get_or_404(news_id)
-    if news.filename:
-        path = os.path.join(app.config["UPLOAD_FOLDER"], news.filename)
-        if os.path.exists(path):
-            os.remove(path)
-    db.session.delete(news)
-    db.session.commit()
-    flash("🗑️ 消息已刪除")
-    return redirect(url_for("news"))
-
-# ========================
 # Google 驗證
 # ========================
 @app.route("/google77b51b745d5d14fa.html")
 def google_verify():
     return send_from_directory(".", "google77b51b745d5d14fa.html")
 
-
-
 # ========================
-# 建立資料表（Render 也會執行）
+# 自動建立資料表（Render 需要）
 # ========================
 with app.app_context():
     db.create_all()
