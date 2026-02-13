@@ -4,7 +4,7 @@ from flask import (
 )
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename
+
 from datetime import datetime, timedelta
 from flask_mail import Mail, Message
 from flask_limiter import Limiter
@@ -12,7 +12,7 @@ from flask_limiter.util import get_remote_address
 from functools import wraps   # 【功能】權限 decorator
 import uuid                   # 【功能】產生唯一檔名
 import os
-
+from flask_migrate import Migrate
 # ========================
 # Flask 基本設定
 # ========================
@@ -31,7 +31,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.permanent_session_lifetime = timedelta(days=7)
 
 db = SQLAlchemy(app)
-
+migrate = Migrate(app, db)
 # ========================
 # 流量限制（防止暴力登入）
 # ========================
@@ -273,7 +273,7 @@ def register():
 # 登入（限制 5 次/分鐘）
 # ========================
 @app.route("/login", methods=["GET", "POST"])
-@limiter.limit("5 per minute")
+@limiter.limit("90 per minute")
 def login():
     if request.method == "POST":
         user = User.query.filter_by(username=request.form["username"]).first()
@@ -362,19 +362,13 @@ def admin_delete_news(news_id):
 def google_verify():
     return send_from_directory(".", "google77b51b745d5d14fa.html")
 
+
+
 # ========================
-# 啟動 & 建立資料表
+# 建立資料表（Render 也會執行）
 # ========================
 with app.app_context():
     db.create_all()
-
-if __name__ == "__main__":
-    app.run(debug=False)
-
-
-
-
-
 
 
 #上傳
