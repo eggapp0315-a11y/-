@@ -275,6 +275,29 @@ def admin_users():
     return render_template("admin_users.html", users=users)
 
 
+
+#新增訊息
+@app.route("/admin/news/new", methods=["GET", "POST"])
+def admin_new_news():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user = User.query.get(session["user_id"])
+    if not user or user.role != "admin":
+        return redirect(url_for("home"))
+
+    if request.method == "POST":
+        title = request.form.get("title")
+        content = request.form.get("content")
+
+        new_news = News(title=title, content=content)
+        db.session.add(new_news)
+        db.session.commit()
+
+        return redirect(url_for("home"))
+
+    return render_template("admin_new_news.html")
+
 # ========================
 # 管理員訊息列表
 # ========================
