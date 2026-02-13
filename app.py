@@ -5,7 +5,7 @@ from flask import (
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
-from flask_mail import Mail
+from flask_mail import Mail, Message
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from functools import wraps
@@ -43,30 +43,38 @@ limiter = Limiter(
 limiter.init_app(app)
 
 # ========================
-# Gmail 設定
+# Gmail 郵件設定
 # ========================
+MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
+MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+
 app.config.update(
     MAIL_SERVER="smtp.gmail.com",
     MAIL_PORT=465,
     MAIL_USE_SSL=True,
-    MAIL_USERNAME=os.environ.get("MAIL_USERNAME"),
-    MAIL_PASSWORD=os.environ.get("MAIL_PASSWORD"),
-    MAIL_DEFAULT_SENDER=os.environ.get("MAIL_USERNAME")
+    MAIL_USERNAME=MAIL_USERNAME,
+    MAIL_PASSWORD=MAIL_PASSWORD,
+    MAIL_DEFAULT_SENDER=MAIL_USERNAME
 )
 
 mail = Mail(app)
 
 # ========================
-# 上傳設定
+# 上傳檔案設定
 # ========================
 UPLOAD_FOLDER = "static/uploads"
 ALLOWED_EXTENSIONS = {"jpg", "png", "pdf", "zip", "docx"}
+
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
+
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+
 def allowed_file(filename):
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+    return "." in filename and \
+        filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 # ========================
 # 資料庫模型
@@ -101,6 +109,7 @@ class ContactMessage(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     replied = db.Column(db.Boolean, default=False)
 
+
 # ========================
 # 管理員權限
 # ========================
@@ -113,6 +122,7 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated
 
+
 # ========================
 # 前台頁面
 # ========================
@@ -120,15 +130,36 @@ def admin_required(f):
 def root():
     return redirect(url_for("home"))
 
+
 @app.route("/home")
 def home():
     return render_template("index.html")
+
+
+@app.route("/teaching")
+def teaching():
+    return render_template("teaching.html")
+
 
 @app.route("/news")
 def news():
     news_list = News.query.order_by(News.date.desc()).all()
     return render_template("news.html", news_list=news_list)
 
+
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+
+@app.route("/class")
+def class_page():
+    return render_template("class.html")
+
+
+# ========================
+# 聯絡我們
+# ========================
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
     if request.method == "POST":
@@ -148,12 +179,19 @@ def contact():
             message=message
         )
 
-        db.session.add(contact_msg)
-        db.session.commit()
-        flash("✅ 已成功送出")
+        try:
+            db.session.add(contact_msg)
+            db.session.commit()
+            flash("✅ 已成功送出，我們會盡快與您聯絡")
+        except Exception as e:
+            db.session.rollback()
+            print("DB ERROR:", e)
+            flash("❌ 系統錯誤，請稍後再試")
+
         return redirect(url_for("contact"))
 
     return render_template("contact.html")
+
 
 # ========================
 # 管理員訊息列表
@@ -166,8 +204,9 @@ def admin_contacts():
     ).all()
     return render_template("admin_contacts.html", messages=messages)
 
+
 # ========================
-# 管理員回覆
+# 管理員回覆（SendGrid 版本）
 # ========================
 @app.route("/admin/contacts/reply/<int:msg_id>", methods=["GET", "POST"])
 @admin_required
@@ -209,6 +248,7 @@ def reply_contact(msg_id):
 
     return render_template("reply_contact.html", msg=msg)
 
+
 # ========================
 # Google 驗證
 # ========================
@@ -216,14 +256,12 @@ def reply_contact(msg_id):
 def google_verify():
     return send_from_directory(".", "google77b51b745d5d14fa.html")
 
+
 # ========================
-# 自動建立資料表（Render 需要）
+# 建立資料表（Render 需要）
 # ========================
 with app.app_context():
     db.create_all()
-
-
-#上傳
-#git add .
-#git commit -m "update project"
-#git push
+#上傳 #git add .
+# #git commit -m "update project"
+# #git push
