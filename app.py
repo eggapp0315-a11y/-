@@ -353,6 +353,20 @@ def reply_contact(msg_id):
 
     return render_template("reply_contact.html", msg=msg)
 
+#刪除訊息
+@app.route("/admin/news/delete/<int:news_id>", methods=["POST"])
+@admin_required
+def admin_delete_news(news_id):
+    news = News.query.get_or_404(news_id)
+    # 如果有上傳檔案，先刪掉
+    if news.filename:
+        path = os.path.join(app.config["UPLOAD_FOLDER"], news.filename)
+        if os.path.exists(path):
+            os.remove(path)
+    db.session.delete(news)
+    db.session.commit()
+    flash("🗑️ 消息已刪除")
+    return redirect(url_for("news"))
 
 # ========================
 # Google 驗證
