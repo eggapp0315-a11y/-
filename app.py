@@ -325,6 +325,19 @@ def reply_contact(msg_id):
 @app.route("/google77b51b745d5d14fa.html")
 def google_verify():
     return send_from_directory(".", "google77b51b745d5d14fa.html")
+# ========================
+# 自動升級指定帳號為 admin
+# ========================
+with app.app_context():
+    target_username = "vincent"  # 改成你的帳號
+
+    user = User.query.filter_by(username=target_username).first()
+    if user:
+        user.role = "admin"
+        db.session.commit()
+        print(f"✅ {target_username} 已升級成 admin")
+    else:
+        print(f"❌ 找不到帳號 {target_username}")
 
 
 # ========================
