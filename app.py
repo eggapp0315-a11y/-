@@ -144,7 +144,16 @@ def teaching():
 @app.route("/news")
 def news():
     news_list = News.query.order_by(News.date.desc()).all()
+
+    # 修正圖片路徑（讓前端可以正常顯示）
+    for n in news_list:
+        if n.filename:
+            n.image_url = url_for("static", filename=f"uploads/{n.filename}")
+        else:
+            n.image_url = None
+
     return render_template("news.html", news_list=news_list)
+
 
 
 @app.route("/about")
