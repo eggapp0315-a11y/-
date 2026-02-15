@@ -53,18 +53,16 @@
                     {% endif %}
 
                     <!-- ✅ 只有管理員才看到刪除按鈕 -->
-                    {% if session.get("role") == "admin" and news.id %}
-                        {% if 'admin_delete_news' in current_app.view_functions %}
-                    <form
-                         action="{{ url_for('admin_delete_news', news_id=news.id) }}"
-                         method="post"
-                         onsubmit="return confirm('確定要刪除這則消息嗎？');"
-                         style="margin-top:10px;"
-                    >
-            <button class="delete-btn">🗑️ 刪除</button>
-        </form>
-    {% endif %}
-{% endif %}
+                   {% if session.get("role") == "admin" %}
+                       <form
+                           action="{{ url_for('admin_delete_news', news_id=news.id) }}"
+                           method="post"
+                           onsubmit="return confirm('確定要刪除這則消息嗎？');"
+                           style="margin-top:10px;"
+                       >
+                       <button class="delete-btn">🗑️ 刪除</button>
+                       </form>
+                  {% endif %}
 
 
                 </li>
