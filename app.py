@@ -407,9 +407,8 @@ def google_verify():
 # ========================
 # 建立資料表（Render 需要）
 # ========================
-with app.app_context():
-    db.create_all()
-    make_admin()#管理員
+if __name__ == "__main__":
+    app.run(debug=False)
 #上傳 #git add .
 # #git commit -m "update project"
 # #git push
