@@ -119,11 +119,7 @@ class ContactMessage(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     replied = db.Column(db.Boolean, default=False)
 
-def make_admin():
-    user = User.query.filter_by(username="vincent").first()
-    if user and user.role != "admin":
-        user.role = "admin"
-        db.session.commit()
+
 
 # ========================
 # 管理員權限
@@ -410,5 +406,5 @@ def google_verify():
 if __name__ == "__main__":
     app.run(debug=False)
 #上傳 #git add .
-# #git commit -m "update project"
+# #git commit -m"update project"
 # #git push
