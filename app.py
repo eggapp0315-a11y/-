@@ -12,6 +12,8 @@ from functools import wraps
 import uuid
 import os
 from flask_migrate import Migrate
+from flask_migrate import Migrate
+
 
 # ========================
 # Flask 基本設定
@@ -23,15 +25,23 @@ app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
 # 資料庫設定
 # ========================
 database_url = os.environ.get("DATABASE_URL")
-if database_url and database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql://", 1)
 
-app.config["SQLALCHEMY_DATABASE_URI"] = database_url or "sqlite:///math.db"
+if database_url:
+    # 修正 Render / Supabase 可能出現的舊格式
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+else:
+    # 本機開發用
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///math.db"
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.permanent_session_lifetime = timedelta(days=7)
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+
 
 # ========================
 # 流量限制
@@ -109,6 +119,11 @@ class ContactMessage(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     replied = db.Column(db.Boolean, default=False)
 
+def make_admin():
+    user = User.query.filter_by(username="vincent").first()
+    if user and user.role != "admin":
+        user.role = "admin"
+        db.session.commit()
 
 # ========================
 # 管理員權限
@@ -386,16 +401,7 @@ def google_verify():
 # ========================
 # 自動升級指定帳號為 admin
 # ========================
-with app.app_context():
-    target_username = "vincent"  # 改成你的帳號
 
-    user = User.query.filter_by(username=target_username).first()
-    if user:
-        user.role = "admin"
-        db.session.commit()
-        print(f"✅ {target_username} 已升級成 admin")
-    else:
-        print(f"❌ 找不到帳號 {target_username}")
 
 
 # ========================
@@ -403,6 +409,7 @@ with app.app_context():
 # ========================
 with app.app_context():
     db.create_all()
+    make_admin()#管理員
 #上傳 #git add .
 # #git commit -m "update project"
 # #git push
