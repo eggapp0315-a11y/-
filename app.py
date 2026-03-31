@@ -409,7 +409,8 @@ def google_verify():
 # 建立資料表（Render 需要）
 # ========================
 if __name__ == "__main__":
-    app.run(debug=False)
+    port = int(os.environ.get("PORT", 5000))  # 使用 Render 指定 PORT
+    app.run(host="0.0.0.0", port=port)
 #上傳 #git add .
 # #git commit -m"update project"
 # #git push
