@@ -65,11 +65,13 @@
             <a href="{{ url_for('contact') }}">聯絡我們</a> 與我們聯繫。
         </p>
     </section>
-    <img
-    src="{{ url_for('static', filename='image/季頡.jpg') }}"
-    alt="關於我們"
-    class="about-image"
->
+
+    <img src="{{ url_for('static', filename='image/zanzan.jpg') }}"
+       alt="關於我們"
+       class="about-image">
+    <a href="/zanzan">
+       <button class="login-btn">點擊老師查看更多</button>
+    </a>
 
     <img src="{{ url_for('static', filename='image/林蕭.jpg') }}", class="about-image2">
     <img src="{{ url_for('static', filename='image/政澤.jpg') }}", class="about-image2">

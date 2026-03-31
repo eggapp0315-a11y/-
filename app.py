@@ -170,7 +170,12 @@ def news():
 @app.route("/about")
 def about():
     return render_template("about.html")
-
+#======#
+#施展
+#======#
+@app.route("/zanzan")
+def zanzan():
+    return render_template("zanzan.html")
 
 @app.route("/class")
 def class_page():

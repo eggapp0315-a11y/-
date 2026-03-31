@@ -466,16 +466,6 @@ nav ul li a:hover {
     color: #FFD700;
 }
 
-.login-btn {
-    background: white;
-    color: #007BFF;
-    padding: 6px 14px;
-    border-radius: 6px;
-    font-weight: bold;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-}
 
 .welcome {
     color: white;
@@ -506,5 +496,67 @@ nav ul li a:hover {
     font-size: 24px;
     cursor: pointer;
 }
+/* =========================================================
+   全站基礎設定（教學網站整體風格）
+   - 重置瀏覽器預設樣式
+   - 設定字型、背景色、文字顏色
+========================================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    overflow-x: hidden;
+    font-family: "Segoe UI", "Noto Sans TC", Arial, sans-serif;
+    background-color: #f6f8fa;
+    color: #222;
+}
 
 
+/* =========================
+   Login 按鈕（導覽列）
+========================= */
+.login-btn {
+    background-color: white;
+    color: #2b7cff !important;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: 0.3s;
+    border: 2px solid #2b7cff;
+}
+
+.login-btn:hover {
+    background-color: #2b7cff;
+    color: white !important;
+}
+.about-row {
+    display: flex;
+    align-items: center;   /* 垂直置中 */
+    gap: 30px;             /* 圖片和文字距離 */
+}
+
+.about-image {
+    width: 250px;          /* 控制圖片大小 */
+    border-radius: 10px;
+}
+
+.about-text {
+    flex: 1;               /* 讓文字區自動填滿 */
+}
+.center-img {
+    display: flex;
+    flex-direction: column;   /* ⭐ 一張一張往下排 */
+    align-items: center;      /* 置中 */
+    gap: 30px;                /* ⭐ 每張圖的距離 */
+}
+
+.full-image {
+    width: 80%;
+    border-radius: 10px;
+}
