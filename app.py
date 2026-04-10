@@ -173,7 +173,7 @@ def about():
 #======#
 #施展
 #======#
-@app.route("/about/zanzan")
+@app.route("/zanzan")
 def zanzan():
     return render_template("zanzan.html")
 

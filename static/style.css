@@ -547,7 +547,7 @@ body {
 }
 
 .about-text {
-    flex: 1;               /* 讓文字區自動填滿 */
+    flex: 2;               /* 讓文字區自動填滿 */
 }
 .center-img {
     display: flex;
@@ -560,3 +560,21 @@ body {
     width: 80%;
     border-radius: 10px;
 }
+.about-row {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+.about-left {
+    display: flex;
+    flex-direction: column; /* 關鍵！上下排 */
+    align-items: center;
+}
+
+.about-image {
+    width: 200px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
