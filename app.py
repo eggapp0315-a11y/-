@@ -181,6 +181,15 @@ def zanzan():
 def class_page():
     return render_template("class.html")
 
+@app.route("/Qiao_Yi")
+def Qiao_Yi():
+    return render_template("Qiao_Yi.html")
+
+@app.route("/hero")
+def hero():
+    return render_template("hero.html")
+
+
 # ========================
 # 註冊
 # ========================

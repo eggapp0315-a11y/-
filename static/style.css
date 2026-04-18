@@ -577,4 +577,186 @@ body {
     border-radius: 10px;
     margin-bottom: 10px;
 }
+/* =========================
+   英雄榜外框（整個排行榜區塊）
+   作用：
+   - 控制寬度
+   - 置中
+   - 白色卡片風格
+========================= */
+.hero-board {
+    max-width: 1000px;   /* 最大寬度 */
+    margin: 40px auto;   /* 上下40px + 左右置中 */
+    background: white;   /* 白底 */
+    padding: 30px;       /* 內距 */
+    border-radius: 12px; /* 圓角 */
+}
+
+
+/* =========================
+   前三名區（3格排版）
+   作用：
+   - 用 grid 排成三欄
+========================= */
+.top-heroes {
+    display: grid;                          /* 使用網格排版 */
+    grid-template-columns: repeat(3, 1fr);  /* 三等分 */
+    gap: 20px;                              /* 每格間距 */
+}
+
+
+/* =========================
+   每一張英雄卡片
+   作用：
+   - 每個學生 / 英雄一張卡
+========================= */
+.hero-card {
+    text-align: center;      /* 文字置中 */
+    background: #f5f7fa;     /* 淺灰背景 */
+    padding: 20px;           /* 內距 */
+    border-radius: 10px;     /* 圓角 */
+    transition: 0.3s;        /* 動畫 */
+}
+
+
+/* =========================
+   滑鼠移上去效果
+   作用：
+   - 卡片浮起來
+========================= */
+.hero-card:hover {
+    transform: translateY(-5px); /* 往上移 */
+}
+
+
+/* =========================
+   排名（第1名、第2名）
+   作用：
+   - 強調排名
+========================= */
+.rank {
+    font-weight: bold;       /* 粗體 */
+    color: #2b7cff;          /* 藍色 */
+    margin-bottom: 8px;
+}
+
+
+/* =========================
+   頭像圖片
+   作用：
+   - 圓形圖片
+========================= */
+.hero-avatar {
+    width: 80px;             /* 固定大小 */
+    height: 80px;
+    border-radius: 50%;      /* 變圓形 */
+    object-fit: cover;       /* 不變形 */
+    margin: 10px 0;
+}
+
+
+/* =========================
+   名字
+   作用：
+   - 顯示學生名字
+========================= */
+.hero-name {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+
+/* =========================
+   分數
+   作用：
+   - 顯示成績
+========================= */
+.hero-score {
+    color: #ff6600;          /* 橘色 */
+    font-size: 18px;
+    margin-top: 5px;
+}
+
+
+/* =========================
+   其他名次列表（第4名以後）
+========================= */
+.hero-list {
+    margin-top: 30px;
+}
+
+
+/* =========================
+   每一列
+   作用：
+   - 一個學生一列
+========================= */
+.hero-item {
+    display: flex;                 /* 橫向排列 */
+    justify-content: space-between; /* 左右分開 */
+    padding: 12px;
+    border-bottom: 1px solid #ccc;
+}
+
+
+/* =========================
+   左側資訊（名次+名字）
+========================= */
+.hero-left {
+    display: flex;
+    gap: 10px;
+}
+
+
+/* =========================
+   分數右側
+========================= */
+.hero-right {
+    font-weight: bold;
+}
+/* ===== 成績表格優化 ===== */
+
+.grade-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 18px;            /* ⭐ 整體字變大 */
+}
+
+.grade-table th,
+.grade-table td {
+    padding: 16px 20px;         /* ⭐ 撐開空間（重點） */
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+/* 表頭（藍色那排） */
+.grade-table th {
+    background-color: #2b7cff;
+    color: white;
+    font-size: 20px;            /* ⭐ 表頭更大 */
+}
+
+/* 每隔一行顏色不同（好閱讀） */
+.grade-table tr:nth-child(even) {
+    background-color: #f5f7fa;
+}
+
+/* 滑鼠滑過去效果 */
+.grade-table tr:hover {
+    background-color: #eaf2ff;
+}
+
+
+/* ===== 整個區塊再放大一點 ===== */
+.hero-board {
+    max-width: 1100px;          /* ⭐ 變寬 */
+    padding: 40px;              /* ⭐ 空間更多 */
+}
+
+
+/* ===== 標題變大 ===== */
+.hero-board h2 {
+    font-size: 32px;
+    margin-bottom: 20px;
+}
 

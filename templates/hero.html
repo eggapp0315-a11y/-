@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>英雄榜｜團隊教學網站</title>
+    <meta name="description" content="關於教學網站，我們致力於提供免費、清楚、有系統的國中教學內容。">
+
+    <!-- 正確載入 CSS（Flask 必寫法） -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<!-- 導覽列（修正 head 錯誤） -->
+<nav>
+    <ul>
+        <li><a href="{{ url_for('about') }}">關於我們</a></li>
+        <li><a href="{{ url_for('contact') }}">聯絡我們</a></li>
+        <li><a href="{{ url_for('teaching') }}">教學理念</a></li>
+        <li><a href="{{ url_for('news') }}">最新消息</a></li>
+        <li><a href="{{ url_for('class_page') }}">課表</a></li>
+    </ul>
+</nav>
+
+<!-- 主內容 -->
+<div class="hero-board">
+
+    <h2>學生成績表</h2>
+
+    <table class="grade-table">
+        <thead>
+            <tr>
+                <th>名字</th>
+                <th>學校</th>
+                <th>科目</th>
+                <th>成績</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>沈柏佑</td>
+                <td>揚子中學</td>
+                <td>國中理化</td>
+                <td>98</td>
+            </tr>
+
+            <tr>
+                <td>蔡妮臻</td>
+                <td>揚子中學</td>
+                <td>國中理化</td>
+                <td>98</td>
+            </tr>
+
+            <tr>
+                <td>楊芝宜</td>
+                <td>揚子中學</td>
+                <td>國中理化</td>
+                <td>96</td>
+            </tr>
+
+        <tr>
+                <td>李元廷</td>
+                <td>揚子中學</td>
+                <td>國中理化 </td>
+                <td>96</td>
+            </tr>
+
+
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>
